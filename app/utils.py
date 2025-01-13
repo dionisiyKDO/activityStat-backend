@@ -1,21 +1,59 @@
 import pandas as pd
 import numpy as np
-import re, os, json
-from modules.spent_time import spent_time 
-from modules.daily_app_usage import daily_app_usage 
+import re
+import os
+import json
+from modules.spent_time import spent_time
+from modules.daily_app_usage import daily_app_usage
 
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+import logging
+import colorlog
+
+
+warnings.simplefilter(action="ignore", category=FutureWarning)
 pd.options.mode.chained_assignment = None
 pd.options.display.precision = 2
 
-import logging
-logging.basicConfig(level=logging.INFO)
 
-data_path = os.path.join('app', 'data', 'aw-buckets-export.json')
-cache_path = os.path.join('app', 'data', 'cache')
+# Define a custom logging format
+log_format = (
+    "%(log_color)s%(levelname)s%(reset)s: %(asctime)s.%(msecs)03d - %(message)s%(reset)s"
+)
+
+# Configure colorlog to add colors to different levels
+color_formatter = colorlog.ColoredFormatter(
+    log_format,
+    log_colors={
+        "DEBUG": "cyan",
+        "INFO": "green",
+        "WARNING": "yellow",
+        "ERROR": "red",
+        "CRITICAL": "bold_red",
+    },
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+
+# Create a handler for the console
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(color_formatter)
+
+# Configure the root logger
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[console_handler],
+)
+
+
+
+
+data_path = os.path.join("app", "data", "export")
+cache_path = os.path.join("app", "data", "cache")
+
+title_map_path = os.path.join("app", "data", "app_title_map.json")
 
 def create_app_title_mapping() -> dict:
+    """Generates and saves a mapping of app executable names to user-friendly titles."""
     # TODO: auto-generate this from the data
     app_title_map = {
         "chrome.exe": "Google Chrome",
@@ -57,127 +95,228 @@ def create_app_title_mapping() -> dict:
         "Zoom.exe": "Zoom",
         "OuterWilds.exe": "Outer Wilds",
         "ui32.exe": "Wallpaper Engine",
-        "Heretics Fork.exe": "Heretic's Fork"
+        "Heretics Fork.exe": "Heretic's Fork",
+        "zen.exe": "Zen Browser",
+        "METAPHOR.exe": "Metaphor Refantazio",
+        "X6Game-Win64-Shipping.exe": "Infinity Nikki",
+        "factorio.exe": "Factorio",
+        "P3R.exe": "P3Reload",
+        "NineSols.exe": "Nine Sols",
+        "GF2_Exilium.exe": "GF2 Exilium",
+        "SndVol.exe": "Sound Volume Control",
+        "ItTakesTwo.exe": "It Takes Two",
+        "VirtualBoxVM.exe": "VirtualBox VM",
+        "thunderbird.exe": "Mozilla Thunderbird",
+        "ApplicationFrameHost.exe": "Application Frame Host",
+        "xtop.exe": "PTC Creo",
     }
 
-    app_title_list = [{"app": app, "title": title} for app, title in app_title_map.items()]
-    
-    # Write the mapping to a JSON file
-    with open('./app/data/app_title_map.json', 'w') as json_file:
-        json.dump(app_title_list, json_file, indent=4)
+    app_title_list = [
+        {"app": app, "title": title} for app, title in app_title_map.items()
+    ]
+
+    try:
+        with open(title_map_path, "w") as json_file:
+            json.dump(app_title_list, json_file, indent=4)
+        logging.info("App title mapping saved to %s", title_map_path)
+    except IOError as e:
+        logging.error("Failed to save app title mapping to %s: %s", title_map_path, e)
+
 
 
 def __get_df(path=data_path) -> pd.DataFrame:
+    """
+    Reads all JSON files in the data_path and extracts window events.
+    Files must start with "aw-buckets-export"
+    """
     try:
-        df = pd.read_json(path_or_buf=path)
-        df = __extract_window_events(df)
-        return df
+        df_result = pd.DataFrame()
+        files = os.listdir(path)
+        logging.info(f"Found {len(files)} files in {path}")
+        
+        for file in files:
+            if file.startswith("aw-buckets-export"):
+                logging.info(f"Processing file: {file}")
+                file_path = os.path.join(path, file)
+                df = pd.read_json(file_path)
+                df = __extract_window_events(df)
+                df_result = pd.concat([df_result, df], ignore_index=True)
+        logging.info(f"Successfully loaded {len(df_result)} events from {path}")
+        return df_result
     except ValueError as e:
-        print(f"Error reading JSON data from {path}: {e}")
+        logging.error(f"Invalid JSON format in files from {path}: {e}")
         return pd.DataFrame()
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logging.error(f"Unexpected error while loading data from {path}: {e}")
         return pd.DataFrame()
 
 def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
-    '''Extracts 'timestamp', 'duration', 'app', 'title' from a bucket DataFrame containing event data'''
+    """Extracts specific fields ('timestamp', 'duration', 'app', 'title') from event data."""
 
-    regex_pattern = r'aw-watcher-window_DESKTOP-[A-Za-z0-9]+'
+    regex_pattern = r"aw-watcher-window_DESKTOP-[A-Za-z0-9]+"
     parse_buckets_id = [ind for ind in df_og.index if re.match(regex_pattern, ind)]
 
     timestamp_arr, duration_arr, app_arr, title_arr = [], [], [], []
 
     for bucket_id in parse_buckets_id:
-        df_data = df_og['buckets'].get(bucket_id, {}) # i think it's safer to use get() because it will return an empty dict if the key is not found
-        df_data.pop('data', None) # remove 'data' key with empty dict (for some fucking reason it is here), so it wouldnt cause an error - "ValueError: Mixing dicts with non-Series may lead to ambiguous ordering."
+        df_data = df_og["buckets"].get(bucket_id, {})  # i think it's safer to use get() because it will return an empty dict if the key is not found
+        df_data.pop("data", None)  # remove 'data' key with empty dict (for some fucking reason it is here), so it wouldnt cause an error - "ValueError: Mixing dicts with non-Series may lead to ambiguous ordering."
         df_bucket = pd.DataFrame(df_data)
 
         for ind in df_bucket.index:
-            event = df_bucket['events'][ind]
+            event = df_bucket["events"][ind]
             try:
-                timestamp_arr.append(event['timestamp'])
-                duration_arr.append(event['duration'])
-                app_arr.append(event['data']['app'])
-                title_arr.append(event['data']['title'])
+                timestamp_arr.append(event["timestamp"])
+                duration_arr.append(event["duration"])
+                app_arr.append(event["data"]["app"])
+                title_arr.append(event["data"]["title"])
             except KeyError as e:
-                print(f"Missing key in event data: {e}")
+                logging.warning(f"Missing key in event data: {e}")
 
-    return pd.DataFrame({'timestamp': timestamp_arr, 'duration': duration_arr, 'app': app_arr, 'title': title_arr})
+    return pd.DataFrame(
+        {
+            "timestamp": timestamp_arr,
+            "duration": duration_arr,
+            "app": app_arr,
+            "title": title_arr,
+        }
+    )
 
-def __save_cache(data, file_path):
-    full_path = os.path.join(cache_path, file_path)
+
+
+def __save_cache(data: pd.DataFrame, cache_file_path: str):
+    """Saves data to a specified cache file."""
+    full_path = os.path.join(cache_path, cache_file_path)
     try:
-        os.makedirs(os.path.dirname(full_path), exist_ok=True)  # Ensure the directory exists
-        with open(full_path, 'w') as f:
-            json.dump(data.to_json(orient='records'), f)
+        os.makedirs( os.path.dirname(full_path), exist_ok=True )  # Ensure the directory exists
+        logging.info(f"Saving cache to {full_path}")
+        with open(full_path, "w") as f:
+            if isinstance(data, pd.DataFrame):
+                json.dump(data.to_json(orient="records"), f)
+            else:
+                json.dump(data, f)
+        logging.info(f"Cache successfully saved to {full_path}")
     except IOError as e:
-        print(f"Error saving cache to {full_path}: {e}")
+        logging.error(f"Failed to save cache to {full_path}: {e}")
 
-def __load_cache(file_path):
+def __load_cache(cache_file_path: str):
     # TODO: check empty file
-    full_path = os.path.join(cache_path, file_path)
+    full_path = os.path.join(cache_path, cache_file_path)
     try:
-        with open(full_path, 'r') as f:
-            return pd.read_json(json.loads(f.read()))
+        logging.info(f"Loading cache from {full_path}")
+        
+        # Metadata is simple dictionary
+        
+        if cache_file_path.startswith("dataset_metadata"):
+            with open(full_path, "r") as f:
+                cache = json.load(f)
+       
+        # everything else is a dataframe
+        else:
+            with open(full_path, "r") as f:
+                cache = pd.read_json(json.loads(f.read()))
+        
+        logging.info(f"Cache successfully loaded from {full_path}")
+        return cache
     except ValueError as e:
-        print(f"Error reading cache from {full_path}: {e}")
+        logging.error(f"Invalid cache file format at {full_path}: {e}")
         return pd.DataFrame()
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logging.error(f"Failed to load cache from {full_path}: {e}")
         return pd.DataFrame()
 
-def __is_cache_valid(file_path):
-    full_path = os.path.join(cache_path, file_path)
+def __is_cache_valid(cache_file_path: str):
+    full_path = os.path.join(cache_path, cache_file_path)
     try:
         if not os.path.exists(full_path):
+            logging.warning(f"Cache file does not exist: {full_path}")
             return False
         
         if os.path.getsize(full_path) == 0:
-            print(f"Cache file {full_path} is empty.")
+            logging.warning(f"Cache file is empty: {full_path}")
             return False
 
-        source_mtime = os.path.getmtime(data_path)
+        source_mtime = max(os.path.getmtime(os.path.join(data_path, file)) for file in os.listdir(data_path))
         cache_mtime = os.path.getmtime(full_path)
-
-        return cache_mtime > source_mtime
+        
+        if cache_mtime > source_mtime:
+            logging.info(f"Cache is up-to-date for {full_path}")
+            return True
+        
+        logging.info(f"Cache {full_path} is outdated")
+        return 
     except OSError as e:
-        print(f"Error checking cache validity: {e}")
+        logging.error(f"Error checking cache validity: {e}")
         return False
 
+
+
 def get_app_list():
-    with open('./data/app_title_map.json', 'r') as json_file:
-        app_title_map = json.load(json_file)
-        print(app_title_map)
-    return app_title_map
+    """Loads the app title mapping from the JSON file."""
+    try:
+        logging.info(f"Loading app title map from {title_map_path}")
+        with open(title_map_path, "r") as json_file:
+            app_title_map = json.load(json_file)
+        logging.info("App title map successfully loaded.")
+        return app_title_map
+    except IOError as e:
+        logging.error(f"Failed to load app title map: {e}")
+        return {}
 
 def get_spent_time():
+    """Calculates and caches spent time data."""
     # TODO: different result with different hyperparameters, take this into account when saving cache
-    file_path = 'spent_time.json'
-    if __is_cache_valid(file_path):
-        result = __load_cache(file_path)
-        return result.to_json(orient='records')
-    else:
-        df = __get_df()
-        logging.info(f"Loading events from {data_path}")
-        logging.info(f"Loaded {len(df)} events from {data_path}")
-        
-        result = spent_time(df)
-        __save_cache(data=result, file_path=file_path)
-        return result.to_json(orient='records')
-
-def get_daily_app_usage(app_name: str = 'chrome.exe'):
-    '''Calculates the time spent on each application each day'''
+    cache_file_path = "spent_time.json"
+    if __is_cache_valid(cache_file_path):
+        return __load_cache(cache_file_path).to_json(orient="records")
     
-    file_path = os.path.join('daily_app_usage', f'daily_app_usage_{app_name}.json')
+    df = __get_df()
+    logging.info("Calculating spent time.")
+    result = spent_time(df)
+    logging.info("Spent time calculation completed.")
+    
+    __save_cache(data=result, cache_file_path=cache_file_path)
+    return result.to_json(orient="records")
+
+def get_daily_app_usage(app_name: str = "chrome.exe"):
+    """Calculates the time spent on each application each day"""
+
+    file_path = os.path.join("daily_app_usage", f"daily_app_usage_{app_name}.json")
     if __is_cache_valid(file_path):
-        result = __load_cache(file_path)
-        return result.to_json(orient='records')
-    else:
-        df = __get_df()
-        result = daily_app_usage(df, app_name)
-        __save_cache(data=result, file_path=file_path)
-        return result.to_json(orient='records')
+        return __load_cache(file_path).to_json(orient="records")
+    
+    df = __get_df()
+    logging.info(df.head())
+    logging.info("Calculating daily app usage for %s.", app_name)
+    result = daily_app_usage(df, app_name)
+    logging.info("Daily app usage calculation completed for %s.", app_name)
+    
+    __save_cache(data=result, file_path=file_path)
+    return result.to_json(orient="records")
 
+def get_dataset_metadata():
+    """Fetch metadata about the dataset, such as the date range."""
+    cache_file_path = "dataset_metadata.json"
+    if __is_cache_valid(cache_file_path):
+        return __load_cache(cache_file_path)
+    
+    df = __get_df()
+    start_date: str = df['timestamp'].min()
+    end_date: str = df['timestamp'].max()
 
-if __name__ == '__main__':
+    # start_date = pd.to_datetime(start_date, format='ISO8601')
+    # end_date = pd.to_datetime(end_date, format='ISO8601')
+
+    metadata = {
+        # string to date
+        "start_date": start_date,
+        "end_date": end_date,
+        "total_records": len(df),
+    }
+
+    logging.info("Fetched dataset metadata: %s", metadata)
+    __save_cache(data=metadata, cache_file_path=cache_file_path)
+    return metadata
+
+if __name__ == "__main__":
     create_app_title_mapping()

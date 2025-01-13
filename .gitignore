@@ -1,7 +1,7 @@
-aw-buckets-export.json
-aw-buckets-export_old.json
+app/data/export
 test.py
 test.ipynb
+
 
 # Python-generated files
 __pycache__/

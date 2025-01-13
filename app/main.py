@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from utils import get_app_list, get_spent_time, get_daily_app_usage
+from utils import get_app_list, get_spent_time, get_daily_app_usage, get_dataset_metadata
 
 app = FastAPI()
 
@@ -25,11 +25,17 @@ def app_list():
 
 @app.get("/spent_time")
 def spent_time():
-    return get_spent_time()
+    return JSONResponse(content=get_spent_time())
 
 @app.get("/daily_app_usage/{app_name}")
 def daily_app_usage(app_name: str):
     return get_daily_app_usage(app_name)
 
+@app.get("/dataset_metadata")
+def dataset_metadata():
+    """API endpoint to fetch metadata about the dataset."""
+    return get_dataset_metadata()
+
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

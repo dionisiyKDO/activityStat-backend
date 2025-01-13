@@ -4,7 +4,6 @@ import json
 def spent_time(df_og: pd.DataFrame, start_date: str = None, end_date: str = None, min_duration: float = 10.0) -> pd.DataFrame:
     '''Calculates the total time spent on each application'''    
     # Convert 'timestamp' to datetime
-    print(df_og.head())
     df_og['timestamp'] = pd.to_datetime(df_og['timestamp'], format='ISO8601')
 
     # Filter by start_date and end_date if provided
@@ -31,12 +30,14 @@ def spent_time(df_og: pd.DataFrame, start_date: str = None, end_date: str = None
     # Sort again after possible aggregation
     df_events.sort_values('duration', ascending=False, inplace=True)
 
+    # read app_title_map.json, listy of dictionaries
     with open('./app/data/app_title_map.json', 'r') as json_file:
-        app_title_map = json.load(json_file)
+        app_title_list = json.load(json_file)
 
-    print(df_events.head())
-    print(app_title_map)
-    
+    # convert from list of dictionaries to single dictionary
+    app_title_map = {item['app']: item['title'] for item in app_title_list}
+
+    # map app names to titles
     df_events['title'] = df_events['app'].map(app_title_map)
 
     return df_events

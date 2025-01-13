@@ -158,5 +158,57 @@
     {
         "app": "Heretics Fork.exe",
         "title": "Heretic's Fork"
+    },
+    {
+        "app": "zen.exe",
+        "title": "Zen Browser"
+    },
+    {
+        "app": "METAPHOR.exe",
+        "title": "Metaphor Refantazio"
+    },
+    {
+        "app": "X6Game-Win64-Shipping.exe",
+        "title": "Infinity Nikki"
+    },
+    {
+        "app": "factorio.exe",
+        "title": "Factorio"
+    },
+    {
+        "app": "P3R.exe",
+        "title": "P3Reload"
+    },
+    {
+        "app": "NineSols.exe",
+        "title": "Nine Sols"
+    },
+    {
+        "app": "GF2_Exilium.exe",
+        "title": "GF2 Exilium"
+    },
+    {
+        "app": "SndVol.exe",
+        "title": "Sound Volume Control"
+    },
+    {
+        "app": "ItTakesTwo.exe",
+        "title": "It Takes Two"
+    },
+    {
+        "app": "VirtualBoxVM.exe",
+        "title": "VirtualBox VM"
+    },
+    {
+        "app": "thunderbird.exe",
+        "title": "Mozilla Thunderbird"
+    },
+    {
+        "app": "ApplicationFrameHost.exe",
+        "title": "Application Frame Host"
+    },
+    {
+        "app": "xtop.exe",
+        "title": "PTC Creo"
     }
 ]
