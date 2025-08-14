@@ -54,6 +54,9 @@ cache_path = os.path.join("app", "data", "cache")
 
 title_map_path = os.path.join("app", "data", "app_title_map.json")
 
+database_name = "data.db"
+database_path = os.path.join("app", "data", database_name)
+
 def create_app_title_mapping() -> dict:
     """Generates and saves a mapping of app executable names to user-friendly titles."""
     if os.path.exists(title_map_path):
@@ -162,7 +165,7 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
     parse_buckets_id = [ind for ind in df_og.index if re.match(regex_pattern, ind)]
     logging.info(f"Found {len(parse_buckets_id)} buckets matching the pattern '{regex_pattern}'")
     
-    timestamp_arr, duration_arr, app_arr, title_arr, os_name_arr = [], [], [], [], []
+    timestamp_arr, duration_arr, app_arr, title_arr, platform_arr = [], [], [], [], []
 
     #region
     # Example of df_bucket structure:
@@ -191,19 +194,19 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
             hostname = df_bucket.get("hostname", [None])[0]  # Get hostname, if it exists
             hostname = hostname.lower()
             if hostname.startswith("desktop-") or hostname.startswith("laptop-") or hostname.startswith("wndws"):
-                os_name = "Windows"
+                platform = "Windows"
             elif hostname in ["linux", "ubuntu", "arch", "endeavouros", "cachyos"]:
-                os_name = "Linux"
+                platform = "Linux"
             elif hostname in ["macos", "mac", "macbook", "macbook pro", "macbook air", "osx"]:
-                os_name = "macOS"
+                platform = "macOS"
             else:
                 logging.warning(f"Unknown OS for hostname: {hostname}")
                 logging.warning(f"Using hostname value as OS name for bucket {bucket_id}")
-                os_name = hostname
+                platform = hostname
         except (IndexError, TypeError) as e:
             logging.warning(f"Hostname not found or invalid in bucket {bucket_id}: {e}")
             logging.warning(f"Using 'Unknown' as OS name for bucket {bucket_id}")
-            os_name = 'Unknown'
+            platform = 'Unknown'
 
         for ind in df_bucket.index:
             event = df_bucket["events"][ind]
@@ -213,7 +216,7 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
                 duration_arr.append(event["duration"])
                 app_arr.append(event["data"]["app"])
                 title_arr.append(event["data"]["title"])
-                os_name_arr.append(os_name)
+                platform_arr.append(platform)
             except KeyError as e:
                 logging.warning(f"Missing key in event data: {e}")
 
@@ -223,7 +226,7 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
             "duration": duration_arr,
             "app": app_arr,
             "title": title_arr,
-            "hostname": os_name_arr,
+            "platform": platform_arr,
         }
     )
 
@@ -293,6 +296,35 @@ def __is_cache_valid(cache_file_path: str):
     except OSError as e:
         logging.error(f"Error checking cache validity: {e}")
         return False
+
+
+
+def init_db():
+    with sqlite3.connect(database_path) as conn:
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS events (
+            timestamp TEXT,
+            duration REAL,
+            app TEXT,
+            title TEXT,
+            platform TEXT,
+            PRIMARY KEY (timestamp, app, title)
+        )
+        """)
+
+# def insert_events(df): 
+#     with sqlite3.connect(database_path) as conn:
+#         for _, row in df.iterrows():
+#             conn.execute("""
+#                 INSERT OR IGNORE INTO events (timestamp, duration, app, title, platform)
+#                 VALUES (?, ?, ?, ?, ?)
+#             """, (row["timestamp"], row["duration"], row["app"], row["title"], row["platform"]))
+#         conn.commit()
+
+
+def get_events():
+    with sqlite3.connect(database_path) as conn:
+        return pd.read_sql("SELECT * FROM events", conn)
 
 
 
