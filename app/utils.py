@@ -1,3 +1,4 @@
+# app/utils.py
 import pandas as pd
 import numpy as np
 import re
@@ -8,6 +9,8 @@ import sqlite3
 import warnings
 import logging
 import colorlog
+
+from config import (data_path, title_map_path, database_name, database_path)
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 pd.options.mode.chained_assignment = None
@@ -45,14 +48,6 @@ logging.basicConfig(
 
 #endregion
 
-
-data_path = os.path.join("app", "data", "export")
-cache_path = os.path.join("app", "data", "cache")
-
-title_map_path = os.path.join("app", "data", "app_title_map.json")
-
-database_name = "data.db"
-database_path = os.path.join("app", "data", database_name)
 
 def create_app_title_mapping() -> dict:
     """Generates and saves a mapping of app executable names to user-friendly titles."""
@@ -293,17 +288,16 @@ def get_spent_time() -> pd.DataFrame:
     result = spent_time()
     return result
 
-def get_daily_app_usage(app_name: str = "chrome.exe") -> pd.DataFrame:
+def get_daily_app_usage(app_name: str = "zen.exe") -> pd.DataFrame:
     """Calculates the time spent on each application each day"""
-
-    logging.info("Calculating daily app usage for %s.", app_name)
+    logging.info(f"Calculating daily app usage for {app_name}.")
     result = daily_app_usage(app_name)
-    logging.info("Daily app usage calculation completed for %s.", app_name)
-    
     return result
 
 def get_dataset_metadata() -> dict[str, str | int]:
     """Fetch metadata about the dataset, such as the date range."""
+    logging.info("Fetching dataset metadata")
+    
     query = """
     SELECT 
         MIN(timestamp) AS start_date, 
@@ -329,7 +323,6 @@ def get_dataset_metadata() -> dict[str, str | int]:
             "total_records": 0
         }
     
-    logging.info("Fetched dataset metadata: %s", metadata)
     return metadata
 
 
@@ -365,7 +358,8 @@ def daily_app_usage(app_name: str = 'chrome.exe', start_date: str = None, end_da
         df_daily_usage = pd.read_sql_query(query, conn, params=params)
 
     # Convert duration from seconds to hours
-    df_daily_usage['duration'] = df_daily_usage['duration'] / 3600.0
+    df_daily_usage['duration'] = df_daily_usage['duration'] / 3600.0  # seconds to hours
+    df_daily_usage['duration'] = df_daily_usage['duration'].round(2)  # round to 2 decimal places
 
     # Fill in missing dates using Pandas
     if not df_daily_usage.empty:
@@ -382,7 +376,7 @@ def daily_app_usage(app_name: str = 'chrome.exe', start_date: str = None, end_da
 
     return df_daily_usage
 
-def spent_time(start_date=None, end_date=None, min_duration=10.0) -> pd.DataFrame:
+def spent_time(start_date: str = None, end_date: str = None, min_duration: float = 10.0) -> pd.DataFrame:
     """Calculates the total time spent on each application"""
     where_clauses = []
     params = []
