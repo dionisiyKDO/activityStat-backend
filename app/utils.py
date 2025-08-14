@@ -3,8 +3,8 @@ import numpy as np
 import re
 import os
 import json
-from modules.spent_time import spent_time
-from modules.daily_app_usage import daily_app_usage
+from app.modules.spent_time import spent_time
+from app.modules.daily_app_usage import daily_app_usage
 
 import warnings
 import logging
@@ -162,6 +162,24 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
 
     timestamp_arr, duration_arr, app_arr, title_arr = [], [], [], []
 
+    #region
+    # Example of df_bucket structure:
+    # {"aw-watcher-window_DESKTOP-9NAUUF0": {
+    #       "id": "aw-watcher-window_DESKTOP-9NAUUF0", 
+    #       "created": "2024-12-22T09:01:05.443462+00:00", 
+    #       "name": null, 
+    #       "type": "currentwindow", 
+    #       "client": "aw-watcher-window", 
+    #       "hostname": "DESKTOP-9NAUUF0", 
+    #       "data": {just empty dict for wharever reason, so we remove it},  
+    #       "events": [ events are here, they are a list of dictionaries with 'timestamp', 'duration', 'data' keys ]
+    # }}
+
+    # Example of event structure:
+    # "events": [   {"timestamp": "2025-01-12T14:26:07.798000+00:00", "duration": 0.0, "data": {"app": "zen.exe", "title": "Zen Browser"}}, 
+    #               {"timestamp": "2025-01-12T14:26:05.760000+00:00", "duration": 1.018, "data": {"app": "explorer.exe", "title": ""}},     ]
+    #endregion
+    
     for bucket_id in parse_buckets_id:
         df_data = df_og["buckets"].get(bucket_id, {})  # i think it's safer to use get() because it will return an empty dict if the key is not found
         df_data.pop("data", None)  # remove 'data' key with empty dict (for some fucking reason it is here), so it wouldnt cause an error - "ValueError: Mixing dicts with non-Series may lead to ambiguous ordering."
@@ -169,6 +187,7 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
 
         for ind in df_bucket.index:
             event = df_bucket["events"][ind]
+            
             try:
                 timestamp_arr.append(event["timestamp"])
                 duration_arr.append(event["duration"])
