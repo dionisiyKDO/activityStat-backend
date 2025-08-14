@@ -3,6 +3,8 @@ import numpy as np
 import re
 import os
 import json
+import sqlite3
+
 from app.modules.spent_time import spent_time
 from app.modules.daily_app_usage import daily_app_usage
 
@@ -156,11 +158,11 @@ def __get_df(path=data_path) -> pd.DataFrame:
 
 def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
     """Extracts specific fields ('timestamp', 'duration', 'app', 'title') from event data."""
-
-    regex_pattern = r"aw-watcher-window_DESKTOP-[A-Za-z0-9]+"
+    regex_pattern = r"aw-watcher-window_[A-Za-z0-9-]+"
     parse_buckets_id = [ind for ind in df_og.index if re.match(regex_pattern, ind)]
-
-    timestamp_arr, duration_arr, app_arr, title_arr = [], [], [], []
+    logging.info(f"Found {len(parse_buckets_id)} buckets matching the pattern '{regex_pattern}'")
+    
+    timestamp_arr, duration_arr, app_arr, title_arr, os_name_arr = [], [], [], [], []
 
     #region
     # Example of df_bucket structure:
@@ -184,6 +186,24 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
         df_data = df_og["buckets"].get(bucket_id, {})  # i think it's safer to use get() because it will return an empty dict if the key is not found
         df_data.pop("data", None)  # remove 'data' key with empty dict (for some fucking reason it is here), so it wouldnt cause an error - "ValueError: Mixing dicts with non-Series may lead to ambiguous ordering."
         df_bucket = pd.DataFrame(df_data)
+        
+        try:
+            hostname = df_bucket.get("hostname", [None])[0]  # Get hostname, if it exists
+            hostname = hostname.lower()
+            if hostname.startswith("desktop-") or hostname.startswith("laptop-") or hostname.startswith("wndws"):
+                os_name = "Windows"
+            elif hostname in ["linux", "ubuntu", "arch", "endeavouros", "cachyos"]:
+                os_name = "Linux"
+            elif hostname in ["macos", "mac", "macbook", "macbook pro", "macbook air", "osx"]:
+                os_name = "macOS"
+            else:
+                logging.warning(f"Unknown OS for hostname: {hostname}")
+                logging.warning(f"Using hostname value as OS name for bucket {bucket_id}")
+                os_name = hostname
+        except (IndexError, TypeError) as e:
+            logging.warning(f"Hostname not found or invalid in bucket {bucket_id}: {e}")
+            logging.warning(f"Using 'Unknown' as OS name for bucket {bucket_id}")
+            os_name = 'Unknown'
 
         for ind in df_bucket.index:
             event = df_bucket["events"][ind]
@@ -193,6 +213,7 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
                 duration_arr.append(event["duration"])
                 app_arr.append(event["data"]["app"])
                 title_arr.append(event["data"]["title"])
+                os_name_arr.append(os_name)
             except KeyError as e:
                 logging.warning(f"Missing key in event data: {e}")
 
@@ -202,6 +223,7 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
             "duration": duration_arr,
             "app": app_arr,
             "title": title_arr,
+            "hostname": os_name_arr,
         }
     )
 
