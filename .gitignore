@@ -1,4 +1,5 @@
 app/data/export
+app/data/data.db
 test.py
 test.ipynb
 
