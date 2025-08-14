@@ -312,6 +312,7 @@ def init_db():
         )
         """)
 
+# 26sec
 # def insert_events(df): 
 #     with sqlite3.connect(database_path) as conn:
 #         for _, row in df.iterrows():
@@ -321,6 +322,14 @@ def init_db():
 #             """, (row["timestamp"], row["duration"], row["app"], row["title"], row["platform"]))
 #         conn.commit()
 
+# 5.8sec
+def insert_events(df): 
+    with sqlite3.connect(database_path) as conn:
+        conn.executemany("""
+            INSERT OR IGNORE INTO events (timestamp, duration, app, title, platform)
+            VALUES (?, ?, ?, ?, ?)
+        """, df[["timestamp", "duration", "app", "title", "platform"]].to_records(index=False))
+        conn.commit()
 
 def get_events():
     with sqlite3.connect(database_path) as conn:
