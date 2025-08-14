@@ -400,23 +400,24 @@ def get_dataset_metadata():
     # if __is_cache_valid(cache_file_path):
     #     return __load_cache(cache_file_path)
     
-    df = __get_df()
-    start_date: str = df['timestamp'].min()
-    end_date: str = df['timestamp'].max()
-
-    # start_date = pd.to_datetime(start_date, format='ISO8601')
-    # end_date = pd.to_datetime(end_date, format='ISO8601')
+    query = "SELECT MIN(timestamp) AS start_date, MAX(timestamp) AS end_date, COUNT(*) AS total_records FROM events"
+    with sqlite3.connect(database_path) as conn:
+        df = pd.read_sql_query(query, conn)
+    
+    start_date: str = df['start_date'].iloc[0] if not df.empty else None
+    end_date: str = df['end_date'].iloc[0] if not df.empty else None
+    total_records: int = df['total_records'].iloc[0] if not df.empty else 0
 
     metadata = {
-        # string to date
         "start_date": start_date,
         "end_date": end_date,
-        "total_records": len(df),
+        "total_records": total_records,
     }
-
     logging.info("Fetched dataset metadata: %s", metadata)
+    
     # __save_cache(data=metadata, cache_file_path=cache_file_path)
     return metadata
+
 
 
 
