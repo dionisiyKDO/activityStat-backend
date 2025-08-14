@@ -5,9 +5,6 @@ import os
 import json
 import sqlite3
 
-from app.modules.spent_time import spent_time
-from app.modules.daily_app_usage import daily_app_usage
-
 import warnings
 import logging
 import colorlog
@@ -17,6 +14,7 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 pd.options.mode.chained_assignment = None
 pd.options.display.precision = 2
 
+#region Logging configuration
 
 # Define a custom logging format
 log_format = (
@@ -46,7 +44,7 @@ logging.basicConfig(
     handlers=[console_handler],
 )
 
-
+#endregion
 
 
 data_path = os.path.join("app", "data", "export")
@@ -62,6 +60,23 @@ def create_app_title_mapping() -> dict:
     if os.path.exists(title_map_path):
         logging.info(f"App title mapping already exists at {title_map_path}.")
         return
+    
+    # parse this too
+    # {'app': 'steam_app_3557620', 'duration': 86.2310852778, 'title': None}
+    # {'app': 'vlc', 'duration': 86.1167513889, 'title': None}
+    # {'app': 'BrownDust II.exe', 'duration': 43.53955, 'title': None}
+    # {'app': 'code-oss', 'duration': 31.9545716667, 'title': None}
+    # {'app': 'r5apex_dx12.exe', 'duration': 28.6704352778, 'title': None}
+    # {'app': 'factorio', 'duration': 25.8147738889, 'title': None}
+    # {'app': 'discord', 'duration': 24.6170216667, 'title': None}
+    # {'app': 'code', 'duration': 20.9713025, 'title': None}
+    # {'app': 'org.telegram.desktop', 'duration': 19.4591188889, 'title': None}
+    # {'app': 'obsidian', 'duration': 15.2051855556, 'title': None}
+    # {'app': 'Flow.Launcher.exe', 'duration': 14.9335838889, 'title': None}
+    # {'app': 'devenv.exe', 'duration': 14.5573625, 'title': None}
+    # {'app': 'SplitFiction.exe', 'duration': 13.2099805556, 'title': None}
+    # {'app': 'Alacritty', 'duration': 12.0729144444, 'title': None}
+    # {'app': 'Spotify', 'duration': 11.0964413889, 'title': None}
     
     # TODO: auto-generate this from the data
     app_title_map = {
@@ -298,7 +313,7 @@ def __is_cache_valid(cache_file_path: str):
         return False
 
 
-
+#region Database functions
 def init_db():
     with sqlite3.connect(database_path) as conn:
         conn.execute("""
@@ -312,15 +327,9 @@ def init_db():
         )
         """)
 
-# 26sec
-# def insert_events(df): 
-#     with sqlite3.connect(database_path) as conn:
-#         for _, row in df.iterrows():
-#             conn.execute("""
-#                 INSERT OR IGNORE INTO events (timestamp, duration, app, title, platform)
-#                 VALUES (?, ?, ?, ?, ?)
-#             """, (row["timestamp"], row["duration"], row["app"], row["title"], row["platform"]))
-#         conn.commit()
+def get_events():
+    with sqlite3.connect(database_path) as conn:
+        return pd.read_sql("SELECT * FROM events", conn)
 
 # 5.8sec
 def insert_events(df): 
@@ -331,10 +340,16 @@ def insert_events(df):
         """, df[["timestamp", "duration", "app", "title", "platform"]].to_records(index=False))
         conn.commit()
 
-def get_events():
-    with sqlite3.connect(database_path) as conn:
-        return pd.read_sql("SELECT * FROM events", conn)
-
+# 26sec
+# def insert_events(df): 
+#     with sqlite3.connect(database_path) as conn:
+#         for _, row in df.iterrows():
+#             conn.execute("""
+#                 INSERT OR IGNORE INTO events (timestamp, duration, app, title, platform)
+#                 VALUES (?, ?, ?, ?, ?)
+#             """, (row["timestamp"], row["duration"], row["app"], row["title"], row["platform"]))
+#         conn.commit()
+#endregion
 
 
 def get_app_list():
@@ -352,39 +367,38 @@ def get_app_list():
 def get_spent_time():
     """Calculates and caches spent time data."""
     # TODO: different result with different hyperparameters, take this into account when saving cache
-    cache_file_path = "spent_time.json"
-    if __is_cache_valid(cache_file_path):
-        return __load_cache(cache_file_path).to_json(orient="records")
+    # cache_file_path = "spent_time.json"
+    # if __is_cache_valid(cache_file_path):
+    #     return __load_cache(cache_file_path).to_json(orient="records")
     
-    df = __get_df()
     logging.info("Calculating spent time.")
-    result = spent_time(df)
+    result = spent_time()
     logging.info("Spent time calculation completed.")
     
-    __save_cache(data=result, cache_file_path=cache_file_path)
+    # __save_cache(data=result, cache_file_path=cache_file_path)
     return result.to_json(orient="records")
 
 def get_daily_app_usage(app_name: str = "chrome.exe"):
     """Calculates the time spent on each application each day"""
 
-    file_path = os.path.join("daily_app_usage", f"daily_app_usage_{app_name}.json")
-    if __is_cache_valid(file_path):
-        return __load_cache(file_path).to_json(orient="records")
+    # file_path = os.path.join("daily_app_usage", f"daily_app_usage_{app_name}.json")
+    # if __is_cache_valid(file_path):
+    #     return __load_cache(file_path).to_json(orient="records")
     
-    df = __get_df()
-    logging.info(df.head())
+    # df = __get_df()
+    # logging.info(df.head())
     logging.info("Calculating daily app usage for %s.", app_name)
-    result = daily_app_usage(df, app_name)
+    result = daily_app_usage(app_name)
     logging.info("Daily app usage calculation completed for %s.", app_name)
     
-    __save_cache(data=result, cache_file_path=file_path)
-    return result.to_json(orient="records")
+    # __save_cache(data=result, cache_file_path=file_path)
+    return result
 
 def get_dataset_metadata():
     """Fetch metadata about the dataset, such as the date range."""
-    cache_file_path = "dataset_metadata.json"
-    if __is_cache_valid(cache_file_path):
-        return __load_cache(cache_file_path)
+    # cache_file_path = "dataset_metadata.json"
+    # if __is_cache_valid(cache_file_path):
+    #     return __load_cache(cache_file_path)
     
     df = __get_df()
     start_date: str = df['timestamp'].min()
@@ -401,8 +415,99 @@ def get_dataset_metadata():
     }
 
     logging.info("Fetched dataset metadata: %s", metadata)
-    __save_cache(data=metadata, cache_file_path=cache_file_path)
+    # __save_cache(data=metadata, cache_file_path=cache_file_path)
     return metadata
+
+
+
+def daily_app_usage(app_name: str = 'chrome.exe', start_date: str = None, end_date: str = None) -> pd.DataFrame:
+    """
+    Calculates the daily time spent on a specified application using a direct SQL query.
+    """
+    where_clauses = ["app = ?"]
+    params = [app_name]
+
+    if start_date:
+        where_clauses.append("timestamp >= ?")
+        params.append(start_date)
+    if end_date:
+        where_clauses.append("timestamp <= ?")
+        params.append(end_date)
+
+    where_sql = f"WHERE {' AND '.join(where_clauses)}"
+
+    query = f"""
+        SELECT
+            strftime('%Y-%m-%d', timestamp) AS date,
+            SUM(duration) AS duration
+        FROM events
+        {where_sql}
+        GROUP BY date
+        ORDER BY date ASC
+    """
+    print(query)
+
+    with sqlite3.connect(database_path) as conn:
+        df_daily_usage = pd.read_sql_query(query, conn, params=params)
+
+    # Convert duration from seconds to hours
+    df_daily_usage['duration'] = df_daily_usage['duration'] / 3600.0
+
+    # Fill in missing dates using Pandas
+    if not df_daily_usage.empty:
+        df_daily_usage['date'] = pd.to_datetime(df_daily_usage['date'])
+        
+        # Create a complete date range
+        min_date = df_daily_usage['date'].min()
+        max_date = df_daily_usage['date'].max()
+        full_date_range = pd.date_range(start=min_date, end=max_date, freq='D')
+        
+        # Reindex the DataFrame to fill in missing dates
+        df_daily_usage = df_daily_usage.set_index('date').reindex(full_date_range).fillna(0).reset_index()
+        df_daily_usage = df_daily_usage.rename(columns={'index': 'date'})
+
+    return df_daily_usage
+
+def spent_time(start_date=None, end_date=None, min_duration=10.0) -> pd.DataFrame:
+    """Calculates the total time spent on each application"""
+    where_clauses = []
+    params = []
+
+    if start_date:
+        where_clauses.append("timestamp >= ?")
+        params.append(start_date)
+    if end_date:
+        where_clauses.append("timestamp <= ?")
+        params.append(end_date)
+
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+
+    query = f"""
+        SELECT app, SUM(duration) AS duration
+        FROM events
+        {where_sql}
+        GROUP BY app
+        HAVING SUM(duration) >= ?
+        ORDER BY duration DESC
+    """
+    print(query)
+    params.append(min_duration * 3600)
+
+    with sqlite3.connect(database_path) as conn:
+        df_events = pd.read_sql_query(query, conn, params=params)
+
+    df_events['duration'] = df_events['duration'] / 3600.0  # seconds to hours
+
+    with open(title_map_path, 'r') as json_file:
+        app_title_list = json.load(json_file)
+    app_title_map = {item['app']: item['title'] for item in app_title_list}
+
+    df_events['title'] = df_events['app'].map(app_title_map)
+
+    return df_events
+
+
+
 
 if __name__ == "__main__":
     ...
