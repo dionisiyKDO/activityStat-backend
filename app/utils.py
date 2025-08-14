@@ -9,7 +9,6 @@ import warnings
 import logging
 import colorlog
 
-
 warnings.simplefilter(action="ignore", category=FutureWarning)
 pd.options.mode.chained_assignment = None
 pd.options.display.precision = 2
@@ -58,7 +57,7 @@ database_path = os.path.join("app", "data", database_name)
 def create_app_title_mapping() -> dict:
     """Generates and saves a mapping of app executable names to user-friendly titles."""
     if os.path.exists(title_map_path):
-        logging.info(f"App title mapping already exists at {title_map_path}.")
+        logging.info(f"App title mapping already exists at \"{title_map_path}\".")
         return
     
     # parse this too
@@ -79,76 +78,72 @@ def create_app_title_mapping() -> dict:
     # {'app': 'Spotify', 'duration': 11.0964413889, 'title': None}
     
     # TODO: auto-generate this from the data
-    app_title_map = {
-        "chrome.exe": "Google Chrome",
-        "Discord.exe": "Discord",
-        "StarRail.exe": "Honkai: Star Rail",
-        "GenshinImpact.exe": "Genshin Impact",
-        "League of Legends.exe": "League of Legends",
-        "Telegram.exe": "Telegram",
-        "dnplayer.exe": "LDPlayer",
-        "Spotify.exe": "Spotify",
-        "Code.exe": "Visual Studio Code",
-        "explorer.exe": "File Explorer",
-        "bg3_dx11.exe": "Baldur's Gate 3",
-        "WINWORD.EXE": "Microsoft Word",
-        "Obsidian.exe": "Obsidian",
-        "reverse1999.exe": "Reverse 1999",
-        "FortniteClient-Win64-Shipping.exe": "Fortnite",
-        "Client-Win64-Shipping.exe": "Wuthering Waves",
-        "nikke.exe": "Goddess of Victory: Nikke",
-        "ZenlessZoneZero.exe": "Zenless Zone Zero",
-        "LeagueClientUx.exe": "League Client",
-        "Overwatch.exe": "Overwatch",
-        "Risk of Rain 2.exe": "Risk of Rain 2",
-        "steamwebhelper.exe": "Steam Web Helper",
-        "Gunfire Reborn.exe": "Gunfire Reborn",
-        "Hades2.exe": "Hades 2",
-        "msedge.exe": "Microsoft Edge",
-        "ShellExperienceHost.exe": "Windows Shell Experience",
-        "vlc.exe": "VLC Media Player",
-        "r5apex.exe": "Apex Legends",
-        "VALORANT-Win64-Shipping.exe": "Valorant",
-        "EXCEL.EXE": "Microsoft Excel",
-        "DevilMayCry5.exe": "Devil May Cry 5",
-        "Risk of Rain Returns.exe": "Risk of Rain Returns",
-        "dotnet.exe": ".NET Core",
-        "AniLibrix.exe": "AniLibrix",
-        "sai2.exe": "PaintTool SAI 2",
-        "acad.exe": "AutoCAD",
-        "Zoom.exe": "Zoom",
-        "OuterWilds.exe": "Outer Wilds",
-        "ui32.exe": "Wallpaper Engine",
-        "Heretics Fork.exe": "Heretic's Fork",
-        "zen.exe": "Zen Browser",
-        "METAPHOR.exe": "Metaphor Refantazio",
-        "X6Game-Win64-Shipping.exe": "Infinity Nikki",
-        "factorio.exe": "Factorio",
-        "P3R.exe": "P3Reload",
-        "NineSols.exe": "Nine Sols",
-        "GF2_Exilium.exe": "GF2 Exilium",
-        "SndVol.exe": "Sound Volume Control",
-        "ItTakesTwo.exe": "It Takes Two",
-        "VirtualBoxVM.exe": "VirtualBox VM",
-        "thunderbird.exe": "Mozilla Thunderbird",
-        "ApplicationFrameHost.exe": "Application Frame Host",
-        "xtop.exe": "PTC Creo",
-    }
-
-    app_title_list = [
-        {"app": app, "title": title} for app, title in app_title_map.items()
+    app_title_map = [
+        {'app': 'chrome.exe', 'title': 'Google Chrome'},
+        {'app': 'Discord.exe', 'title': 'Discord'},
+        {'app': 'StarRail.exe', 'title': 'Honkai: Star Rail'},
+        {'app': 'GenshinImpact.exe', 'title': 'Genshin Impact'},
+        {'app': 'League of Legends.exe', 'title': 'League of Legends'},
+        {'app': 'Telegram.exe', 'title': 'Telegram'},
+        {'app': 'dnplayer.exe', 'title': 'LDPlayer'},
+        {'app': 'Spotify.exe', 'title': 'Spotify'},
+        {'app': 'Code.exe', 'title': 'Visual Studio Code'},
+        {'app': 'explorer.exe', 'title': 'File Explorer'},
+        {'app': 'bg3_dx11.exe', 'title': "Baldur's Gate 3"},
+        {'app': 'WINWORD.EXE', 'title': 'Microsoft Word'},
+        {'app': 'Obsidian.exe', 'title': 'Obsidian'},
+        {'app': 'reverse1999.exe', 'title': 'Reverse 1999'},
+        {'app': 'FortniteClient-Win64-Shipping.exe', 'title': 'Fortnite'},
+        {'app': 'Client-Win64-Shipping.exe', 'title': 'Wuthering Waves'},
+        {'app': 'nikke.exe', 'title': 'Goddess of Victory: Nikke'},
+        {'app': 'ZenlessZoneZero.exe', 'title': 'Zenless Zone Zero'},
+        {'app': 'LeagueClientUx.exe', 'title': 'League Client'},
+        {'app': 'Overwatch.exe', 'title': 'Overwatch'},
+        {'app': 'Risk of Rain 2.exe', 'title': 'Risk of Rain 2'},
+        {'app': 'steamwebhelper.exe', 'title': 'Steam Web Helper'},
+        {'app': 'Gunfire Reborn.exe', 'title': 'Gunfire Reborn'},
+        {'app': 'Hades2.exe', 'title': 'Hades 2'},
+        {'app': 'msedge.exe', 'title': 'Microsoft Edge'},
+        {'app': 'ShellExperienceHost.exe', 'title': 'Windows Shell Experience'},
+        {'app': 'vlc.exe', 'title': 'VLC Media Player'},
+        {'app': 'r5apex.exe', 'title': 'Apex Legends'},
+        {'app': 'VALORANT-Win64-Shipping.exe', 'title': 'Valorant'},
+        {'app': 'EXCEL.EXE', 'title': 'Microsoft Excel'},
+        {'app': 'DevilMayCry5.exe', 'title': 'Devil May Cry 5'},
+        {'app': 'Risk of Rain Returns.exe', 'title': 'Risk of Rain Returns'},
+        {'app': 'dotnet.exe', 'title': '.NET Core'},
+        {'app': 'AniLibrix.exe', 'title': 'AniLibrix'},
+        {'app': 'sai2.exe', 'title': 'PaintTool SAI 2'},
+        {'app': 'acad.exe', 'title': 'AutoCAD'},
+        {'app': 'Zoom.exe', 'title': 'Zoom'},
+        {'app': 'OuterWilds.exe', 'title': 'Outer Wilds'},
+        {'app': 'ui32.exe', 'title': 'Wallpaper Engine'},
+        {'app': 'Heretics Fork.exe', 'title': "Heretic's Fork"},
+        {'app': 'zen.exe', 'title': 'Zen Browser'},
+        {'app': 'METAPHOR.exe', 'title': 'Metaphor Refantazio'},
+        {'app': 'X6Game-Win64-Shipping.exe', 'title': 'Infinity Nikki'},
+        {'app': 'factorio.exe', 'title': 'Factorio'},
+        {'app': 'P3R.exe', 'title': 'P3Reload'},
+        {'app': 'NineSols.exe', 'title': 'Nine Sols'},
+        {'app': 'GF2_Exilium.exe', 'title': 'GF2 Exilium'},
+        {'app': 'SndVol.exe', 'title': 'Sound Volume Control'},
+        {'app': 'ItTakesTwo.exe', 'title': 'It Takes Two'},
+        {'app': 'VirtualBoxVM.exe', 'title': 'VirtualBox VM'},
+        {'app': 'thunderbird.exe', 'title': 'Mozilla Thunderbird'},
+        {'app': 'ApplicationFrameHost.exe', 'title': 'Application Frame Host'},
+        {'app': 'xtop.exe', 'title': 'PTC Creo'}
     ]
 
     try:
         with open(title_map_path, "w") as json_file:
-            json.dump(app_title_list, json_file, indent=4)
-        logging.info("App title mapping saved to %s", title_map_path)
+            json.dump(app_title_map, json_file, indent=4)
+        logging.info(f"App title mapping saved to {title_map_path}", )
     except IOError as e:
-        logging.error("Failed to save app title mapping to %s: %s", title_map_path, e)
+        logging.error(f"Failed to save app title mapping to {title_map_path}: {e}")
 
 
 
-def __get_df(path=data_path) -> pd.DataFrame:
+def _get_df(path: str = data_path) -> pd.DataFrame:
     """
     Reads all JSON files in the data_path and extracts window events.
     Files must start with "aw-buckets-export"
@@ -163,7 +158,7 @@ def __get_df(path=data_path) -> pd.DataFrame:
                 logging.info(f"Processing file: {file}")
                 file_path = os.path.join(path, file)
                 df = pd.read_json(file_path)
-                df = __extract_window_events(df)
+                df = _extract_window_events(df)
                 df_result = pd.concat([df_result, df], ignore_index=True)
         logging.info(f"Successfully loaded {len(df_result)} events from {path}")
         return df_result
@@ -174,11 +169,10 @@ def __get_df(path=data_path) -> pd.DataFrame:
         logging.error(f"Unexpected error while loading data from {path}: {e}")
         return pd.DataFrame()
 
-def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
-    """Extracts specific fields ('timestamp', 'duration', 'app', 'title') from event data."""
+def _extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
+    """Extracts specific fields ('timestamp', 'duration', 'app', 'title', 'platform') from event data."""
     regex_pattern = r"aw-watcher-window_[A-Za-z0-9-]+"
     parse_buckets_id = [ind for ind in df_og.index if re.match(regex_pattern, ind)]
-    logging.info(f"Found {len(parse_buckets_id)} buckets matching the pattern '{regex_pattern}'")
     
     timestamp_arr, duration_arr, app_arr, title_arr, platform_arr = [], [], [], [], []
 
@@ -215,12 +209,10 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
             elif hostname in ["macos", "mac", "macbook", "macbook pro", "macbook air", "osx"]:
                 platform = "macOS"
             else:
-                logging.warning(f"Unknown OS for hostname: {hostname}")
-                logging.warning(f"Using hostname value as OS name for bucket {bucket_id}")
+                logging.warning(f"Unknown OS for bucket \"{bucket_id}\", Using hostname value \"{hostname}\", as an OS name for ")
                 platform = hostname
         except (IndexError, TypeError) as e:
-            logging.warning(f"Hostname not found or invalid in bucket {bucket_id}: {e}")
-            logging.warning(f"Using 'Unknown' as OS name for bucket {bucket_id}")
+            logging.warning(f"Hostname not found or invalid in bucket {bucket_id}: {e}. Using \"Unknown\" as an OS name")
             platform = 'Unknown'
 
         for ind in df_bucket.index:
@@ -246,74 +238,8 @@ def __extract_window_events(df_og: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-
-def __save_cache(data: pd.DataFrame, cache_file_path: str):
-    """Saves data to a specified cache file."""
-    full_path = os.path.join(cache_path, cache_file_path)
-    try:
-        os.makedirs( os.path.dirname(full_path), exist_ok=True )  # Ensure the directory exists
-        logging.info(f"Saving cache to {full_path}")
-        with open(full_path, "w") as f:
-            if isinstance(data, pd.DataFrame):
-                json.dump(data.to_json(orient="records"), f)
-            else:
-                json.dump(data, f)
-        logging.info(f"Cache successfully saved to {full_path}")
-    except IOError as e:
-        logging.error(f"Failed to save cache to {full_path}: {e}")
-
-def __load_cache(cache_file_path: str):
-    # TODO: check empty file
-    full_path = os.path.join(cache_path, cache_file_path)
-    try:
-        logging.info(f"Loading cache from {full_path}")
-        
-        # Metadata is simple dictionary
-        
-        if cache_file_path.startswith("dataset_metadata"):
-            with open(full_path, "r") as f:
-                cache = json.load(f)
-       
-        # everything else is a dataframe
-        else:
-            with open(full_path, "r") as f:
-                cache = pd.read_json(json.loads(f.read()))
-        
-        logging.info(f"Cache successfully loaded from {full_path}")
-        return cache
-    except ValueError as e:
-        logging.error(f"Invalid cache file format at {full_path}: {e}")
-        return pd.DataFrame()
-    except Exception as e:
-        logging.error(f"Failed to load cache from {full_path}: {e}")
-        return pd.DataFrame()
-
-def __is_cache_valid(cache_file_path: str):
-    full_path = os.path.join(cache_path, cache_file_path)
-    try:
-        if not os.path.exists(full_path):
-            logging.warning(f"Cache file does not exist: {full_path}")
-            return False
-        
-        if os.path.getsize(full_path) == 0:
-            logging.warning(f"Cache file is empty: {full_path}")
-            return False
-
-        source_mtime = max(os.path.getmtime(os.path.join(data_path, file)) for file in os.listdir(data_path))
-        cache_mtime = os.path.getmtime(full_path)
-        
-        if cache_mtime > source_mtime:
-            logging.info(f"Cache is up-to-date for {full_path}")
-            return True
-        
-        logging.info(f"Cache {full_path} is outdated")
-        return 
-    except OSError as e:
-        logging.error(f"Error checking cache validity: {e}")
-        return False
-
-
 #region Database functions
+
 def init_db():
     with sqlite3.connect(database_path) as conn:
         conn.execute("""
@@ -326,12 +252,15 @@ def init_db():
             PRIMARY KEY (timestamp, app, title)
         )
         """)
-
-def get_events():
+    
+    # Check if the database is empty then it was just created, so insert data
     with sqlite3.connect(database_path) as conn:
-        return pd.read_sql("SELECT * FROM events", conn)
+        curr = conn.cursor()
+        curr.execute("SELECT EXISTS(SELECT 1 FROM events)")
+        if curr.fetchone()[0] == 0:
+            logging.info("New database created, inserting exported data...")
+            insert_events(_get_df(data_path))
 
-# 5.8sec
 def insert_events(df): 
     with sqlite3.connect(database_path) as conn:
         conn.executemany("""
@@ -340,82 +269,67 @@ def insert_events(df):
         """, df[["timestamp", "duration", "app", "title", "platform"]].to_records(index=False))
         conn.commit()
 
-# 26sec
-# def insert_events(df): 
-#     with sqlite3.connect(database_path) as conn:
-#         for _, row in df.iterrows():
-#             conn.execute("""
-#                 INSERT OR IGNORE INTO events (timestamp, duration, app, title, platform)
-#                 VALUES (?, ?, ?, ?, ?)
-#             """, (row["timestamp"], row["duration"], row["app"], row["title"], row["platform"]))
-#         conn.commit()
+def get_events():
+    with sqlite3.connect(database_path) as conn:
+        return pd.read_sql("SELECT * FROM events", conn)
+
 #endregion
 
 
-def get_app_list():
+def get_app_list() -> list[dict[str, str]]:
     """Loads the app title mapping from the JSON file."""
     try:
-        logging.info(f"Loading app title map from {title_map_path}")
         with open(title_map_path, "r") as json_file:
             app_title_map = json.load(json_file)
-        logging.info("App title map successfully loaded.")
+        logging.info(f"Successfully loaded App title map from {title_map_path}")
         return app_title_map
     except IOError as e:
         logging.error(f"Failed to load app title map: {e}")
-        return {}
+        return []
 
-def get_spent_time():
-    """Calculates and caches spent time data."""
-    # TODO: different result with different hyperparameters, take this into account when saving cache
-    # cache_file_path = "spent_time.json"
-    # if __is_cache_valid(cache_file_path):
-    #     return __load_cache(cache_file_path).to_json(orient="records")
-    
-    logging.info("Calculating spent time.")
+def get_spent_time() -> pd.DataFrame:
+    """Queries the database for total time spent on each application."""
+    logging.info("Calculating total time spent.")
     result = spent_time()
-    logging.info("Spent time calculation completed.")
-    
-    # __save_cache(data=result, cache_file_path=cache_file_path)
-    return result.to_json(orient="records")
+    return result
 
-def get_daily_app_usage(app_name: str = "chrome.exe"):
+def get_daily_app_usage(app_name: str = "chrome.exe") -> pd.DataFrame:
     """Calculates the time spent on each application each day"""
 
-    # file_path = os.path.join("daily_app_usage", f"daily_app_usage_{app_name}.json")
-    # if __is_cache_valid(file_path):
-    #     return __load_cache(file_path).to_json(orient="records")
-    
-    # df = __get_df()
-    # logging.info(df.head())
     logging.info("Calculating daily app usage for %s.", app_name)
     result = daily_app_usage(app_name)
     logging.info("Daily app usage calculation completed for %s.", app_name)
     
-    # __save_cache(data=result, cache_file_path=file_path)
     return result
 
-def get_dataset_metadata():
+def get_dataset_metadata() -> dict[str, str | int]:
     """Fetch metadata about the dataset, such as the date range."""
-    # cache_file_path = "dataset_metadata.json"
-    # if __is_cache_valid(cache_file_path):
-    #     return __load_cache(cache_file_path)
-    
-    query = "SELECT MIN(timestamp) AS start_date, MAX(timestamp) AS end_date, COUNT(*) AS total_records FROM events"
+    query = """
+    SELECT 
+        MIN(timestamp) AS start_date, 
+        MAX(timestamp) AS end_date, 
+        COUNT(timestamp) AS total_records 
+    FROM events
+    """
     with sqlite3.connect(database_path) as conn:
-        df = pd.read_sql_query(query, conn)
+        cursor = conn.cursor()
+        cursor.execute(query)
+        row = cursor.fetchone()
     
-    start_date: str = df['start_date'].iloc[0] if not df.empty else None
-    end_date: str = df['end_date'].iloc[0] if not df.empty else None
-    total_records: int = df['total_records'].iloc[0] if not df.empty else 0
-
-    metadata = {
-        "start_date": start_date,
-        "end_date": end_date,
-        "total_records": total_records,
-    }
+    if row:
+        metadata = {
+            "start_date": row[0],
+            "end_date": row[1],
+            "total_records": row[2]  # SQLite returns count as int
+        }
+    else:
+        metadata = {
+            "start_date": None,
+            "end_date": None,
+            "total_records": 0
+        }
+    
     logging.info("Fetched dataset metadata: %s", metadata)
-    
-    # __save_cache(data=metadata, cache_file_path=cache_file_path)
     return metadata
 
 
@@ -446,7 +360,6 @@ def daily_app_usage(app_name: str = 'chrome.exe', start_date: str = None, end_da
         GROUP BY date
         ORDER BY date ASC
     """
-    print(query)
 
     with sqlite3.connect(database_path) as conn:
         df_daily_usage = pd.read_sql_query(query, conn, params=params)
@@ -491,13 +404,13 @@ def spent_time(start_date=None, end_date=None, min_duration=10.0) -> pd.DataFram
         HAVING SUM(duration) >= ?
         ORDER BY duration DESC
     """
-    print(query)
     params.append(min_duration * 3600)
 
     with sqlite3.connect(database_path) as conn:
         df_events = pd.read_sql_query(query, conn, params=params)
 
     df_events['duration'] = df_events['duration'] / 3600.0  # seconds to hours
+    df_events['duration'] = df_events['duration'].round(2)  # round to 2 decimal places
 
     with open(title_map_path, 'r') as json_file:
         app_title_list = json.load(json_file)
