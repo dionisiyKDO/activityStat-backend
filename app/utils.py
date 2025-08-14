@@ -54,6 +54,10 @@ title_map_path = os.path.join("app", "data", "app_title_map.json")
 
 def create_app_title_mapping() -> dict:
     """Generates and saves a mapping of app executable names to user-friendly titles."""
+    if os.path.exists(title_map_path):
+        logging.info(f"App title mapping already exists at {title_map_path}.")
+        return
+    
     # TODO: auto-generate this from the data
     app_title_map = {
         "chrome.exe": "Google Chrome",
@@ -291,7 +295,7 @@ def get_daily_app_usage(app_name: str = "chrome.exe"):
     result = daily_app_usage(df, app_name)
     logging.info("Daily app usage calculation completed for %s.", app_name)
     
-    __save_cache(data=result, file_path=file_path)
+    __save_cache(data=result, cache_file_path=file_path)
     return result.to_json(orient="records")
 
 def get_dataset_metadata():
@@ -319,4 +323,4 @@ def get_dataset_metadata():
     return metadata
 
 if __name__ == "__main__":
-    create_app_title_mapping()
+    ...

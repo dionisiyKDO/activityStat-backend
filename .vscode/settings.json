@@ -3,12 +3,12 @@
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
-        "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         "**/__pycache__/": true,
         "**/.svelte-kit/": true,
-        "**/node_modules/": true
+        "**/node_modules/": true,
+        "**/CVS": true
     },
     "hide-files.files": []
 }
