@@ -3,7 +3,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from utils import (
-    get_spent_time, get_daily_app_usage, get_dataset_metadata, get_flatten_apps_to_title_map,
+    get_spent_time, get_daily_app_usage, get_dataset_metadata, get_flatten_apps_to_title_map, get_flatten_title_to_apps_map,
     build_flatten_title_to_apps_map, build_flatten_apps_to_title_map, init_db
 )
 
@@ -24,7 +24,7 @@ def read_root():
 
 @app.get("/app_list")
 def app_list():
-    return get_flatten_apps_to_title_map()
+    return get_flatten_title_to_apps_map()
 
 @app.get("/spent_time")
 def spent_time():
