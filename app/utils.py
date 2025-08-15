@@ -1,6 +1,5 @@
 # app/utils.py
 import pandas as pd
-import numpy as np
 import re
 import os
 import json
@@ -10,7 +9,7 @@ import warnings
 import logging
 import colorlog
 
-from config import (data_path, title_map_path, database_name, database_path)
+from config import (data_path, database_path, flatten_apps_to_title_map, flatten_title_to_apps_map)
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 pd.options.mode.chained_assignment = None
@@ -49,92 +48,180 @@ logging.basicConfig(
 #endregion
 
 
-def create_app_title_mapping() -> dict:
+def _get_app_map() -> dict:
     """Generates and saves a mapping of app executable names to user-friendly titles."""
-    if os.path.exists(title_map_path):
-        logging.info(f"App title mapping already exists at \"{title_map_path}\".")
+    app_title_map = {
+        "Windows": {
+            "Browsers": {
+                "chrome.exe": "Google Chrome",
+                "msedge.exe": "Microsoft Edge",
+                "zen.exe": "Zen Browser"
+            },
+            "Chat & Communication": {
+                "Discord.exe": "Discord",
+                "Telegram.exe": "Telegram",
+                "thunderbird.exe": "Mozilla Thunderbird",
+                "Zoom.exe": "Zoom"
+            },
+            "Games": {
+                "StarRail.exe": "Honkai: Star Rail",
+                "GenshinImpact.exe": "Genshin Impact",
+                "reverse1999.exe": "Reverse 1999",
+                "League of Legends.exe": "League of Legends",
+                "LeagueClientUx.exe": "League Client",
+                "FortniteClient-Win64-Shipping.exe": "Fortnite",
+                "Client-Win64-Shipping.exe": "Wuthering Waves",
+                "nikke.exe": "Goddess of Victory: Nikke",
+                "ZenlessZoneZero.exe": "Zenless Zone Zero",
+                "Overwatch.exe": "Overwatch",
+                "Risk of Rain 2.exe": "Risk of Rain 2",
+                "Gunfire Reborn.exe": "Gunfire Reborn",
+                "Hades2.exe": "Hades 2",
+                "VALORANT-Win64-Shipping.exe": "Valorant",
+                "DevilMayCry5.exe": "Devil May Cry 5",
+                "Risk of Rain Returns.exe": "Risk of Rain Returns",
+                "ItTakesTwo.exe": "It Takes Two",
+                "bg3_dx11.exe": "Baldur's Gate 3",
+                "X6Game-Win64-Shipping.exe": "Infinity Nikki",
+                "P3R.exe": "P3Reload",
+                "NineSols.exe": "Nine Sols",
+                "GF2_Exilium.exe": "GF2 Exilium",
+                "METAPHOR.exe": "Metaphor Refantazio",
+                "Heretics Fork.exe": "Heretic's Fork",
+                "BrownDust II.exe": "BrownDust II",
+                "r5apex_dx12.exe": "Apex Legends",
+                "SoTGame.exe": "Sea of Thieves",
+                "Balatro.exe": "Balatro",
+                "AWayOut.exe": "A Way Out",
+                "TETR.IO.exe": "TETR.IO",
+                "Terraria.exe": "Terraria",
+                "Rungore.exe": "Rungore",
+                "OuterWilds.exe": "Outer Wilds",
+                "dnplayer.exe": "LDPlayer",
+                "factorio.exe": "Factorio",
+                "SplitFiction.exe": "Split Fiction",
+                "Replicube.exe": "Replicube",
+                "MiSideFull.exe": "MiSide",
+                "FragPunk.exe": "FragPunk",
+                "20SM.exe": "20 Small Mazes",
+                "HYP.exe": "HoyoPlay Launcher",
+                "launcher_main.exe": "Wuthering Waves Launcher",
+            },
+            "Editors & IDEs": {
+                "Code.exe": "Visual Studio Code",
+                "devenv.exe": "Visual Studio",
+                "acad.exe": "AutoCAD",
+                "sai2.exe": "PaintTool SAI 2",
+                "Obsidian.exe": "Obsidian",
+                "WINWORD.EXE": "Microsoft Word",
+                "EXCEL.EXE": "Microsoft Excel",
+                "POWERPNT.EXE": "Microsoft PowerPoint",
+                "netbeans64.exe": "NetBeans IDE",
+                "MATLAB.exe": "MATLAB",
+                "godot.windows.opt.tools.64.exe": "Godot Engine",
+                "pgAdmin4.exe": "pgAdmin 4",
+                "xtop.exe": "PTC Creo",
+            },
+            "System & Utilities": {
+                "explorer.exe": "File Explorer",
+                "ShellExperienceHost.exe": "Windows Shell Experience",
+                "ApplicationFrameHost.exe": "Application Frame Host",
+                "SndVol.exe": "Sound Volume Control",
+                "VirtualBoxVM.exe": "VirtualBox VM",
+                "Taskmgr.exe": "Task Manager",
+                "dotnet.exe": ".NET Core",
+                "NVIDIA app.exe": "NVIDIA App",
+                "mintty.exe": "MinTTY Terminal",
+                "Taskmgr.exe": "Task Manager",
+                "python.exe": "Python",
+                "SnippingTool.exe": "Snipping Tool"
+            },
+            "Media & Players": {
+                "Spotify.exe": "Spotify",
+                "AniLibrix.exe": "AniLibrix",
+                "vlc.exe": "VLC Media Player",
+                "ui32.exe": "Wallpaper Engine",
+                "Photos.exe": "Microsoft Photos",
+                "obs64.exe": "OBS Studio"
+            },
+            "Other": {
+                "Flow.Launcher.exe": "Flow Launcher",
+                "steamwebhelper.exe": "Steam Web Helper",
+            }
+        },
+        "Linux": {
+            "Browsers": {
+                "chrome": "Google Chrome",
+                "firefox": "Mozilla Firefox",
+                "zen": "Zen Browser"
+            },
+            "Chat & Communication": {
+                "discord": "Discord",
+                "org.telegram.desktop": "Telegram"
+            },
+            "Games": {
+                "steam": "Steam",
+                "steam_app_3557620": "Blue Archvie",
+                "steam_app_2357570": "Overwatch",
+                "factorio": "Factorio",
+            },
+            "Editors & IDEs": {
+                "code": "Visual Studio Code",
+                "code-oss": "Visual Studio Code",
+                "obsidian": "Obsidian",
+            },
+            "System & Utilities": {
+                "Alacritty": "Alacritty Terminal",
+                "org.gnome.Nautilus": "Files (Nautilus)"
+            },
+            "Media & Players": {
+                "vlc": "VLC Media Player",
+                "Spotify": "Spotify",
+                "mpv": "mpv Media Player",
+            }
+        }
+    }
+    
+    return app_title_map
+
+def build_flatten_apps_to_title_map():
+    """Flatten nested OS -> category -> app map into app -> title."""
+    if os.path.exists(flatten_apps_to_title_map):
+        logging.info(f"Apps to title mapping already exists at \"{flatten_apps_to_title_map}\".")
         return
     
-    # parse this too
-    # {'app': 'steam_app_3557620', 'duration': 86.2310852778, 'title': None}
-    # {'app': 'vlc', 'duration': 86.1167513889, 'title': None}
-    # {'app': 'BrownDust II.exe', 'duration': 43.53955, 'title': None}
-    # {'app': 'code-oss', 'duration': 31.9545716667, 'title': None}
-    # {'app': 'r5apex_dx12.exe', 'duration': 28.6704352778, 'title': None}
-    # {'app': 'factorio', 'duration': 25.8147738889, 'title': None}
-    # {'app': 'discord', 'duration': 24.6170216667, 'title': None}
-    # {'app': 'code', 'duration': 20.9713025, 'title': None}
-    # {'app': 'org.telegram.desktop', 'duration': 19.4591188889, 'title': None}
-    # {'app': 'obsidian', 'duration': 15.2051855556, 'title': None}
-    # {'app': 'Flow.Launcher.exe', 'duration': 14.9335838889, 'title': None}
-    # {'app': 'devenv.exe', 'duration': 14.5573625, 'title': None}
-    # {'app': 'SplitFiction.exe', 'duration': 13.2099805556, 'title': None}
-    # {'app': 'Alacritty', 'duration': 12.0729144444, 'title': None}
-    # {'app': 'Spotify', 'duration': 11.0964413889, 'title': None}
+    flat_map = {}
+    for os_section in _get_app_map().values():
+        for category in os_section.values():
+            flat_map.update(category)
     
-    # TODO: auto-generate this from the data
-    app_title_map = [
-        {'app': 'chrome.exe', 'title': 'Google Chrome'},
-        {'app': 'Discord.exe', 'title': 'Discord'},
-        {'app': 'StarRail.exe', 'title': 'Honkai: Star Rail'},
-        {'app': 'GenshinImpact.exe', 'title': 'Genshin Impact'},
-        {'app': 'League of Legends.exe', 'title': 'League of Legends'},
-        {'app': 'Telegram.exe', 'title': 'Telegram'},
-        {'app': 'dnplayer.exe', 'title': 'LDPlayer'},
-        {'app': 'Spotify.exe', 'title': 'Spotify'},
-        {'app': 'Code.exe', 'title': 'Visual Studio Code'},
-        {'app': 'explorer.exe', 'title': 'File Explorer'},
-        {'app': 'bg3_dx11.exe', 'title': "Baldur's Gate 3"},
-        {'app': 'WINWORD.EXE', 'title': 'Microsoft Word'},
-        {'app': 'Obsidian.exe', 'title': 'Obsidian'},
-        {'app': 'reverse1999.exe', 'title': 'Reverse 1999'},
-        {'app': 'FortniteClient-Win64-Shipping.exe', 'title': 'Fortnite'},
-        {'app': 'Client-Win64-Shipping.exe', 'title': 'Wuthering Waves'},
-        {'app': 'nikke.exe', 'title': 'Goddess of Victory: Nikke'},
-        {'app': 'ZenlessZoneZero.exe', 'title': 'Zenless Zone Zero'},
-        {'app': 'LeagueClientUx.exe', 'title': 'League Client'},
-        {'app': 'Overwatch.exe', 'title': 'Overwatch'},
-        {'app': 'Risk of Rain 2.exe', 'title': 'Risk of Rain 2'},
-        {'app': 'steamwebhelper.exe', 'title': 'Steam Web Helper'},
-        {'app': 'Gunfire Reborn.exe', 'title': 'Gunfire Reborn'},
-        {'app': 'Hades2.exe', 'title': 'Hades 2'},
-        {'app': 'msedge.exe', 'title': 'Microsoft Edge'},
-        {'app': 'ShellExperienceHost.exe', 'title': 'Windows Shell Experience'},
-        {'app': 'vlc.exe', 'title': 'VLC Media Player'},
-        {'app': 'r5apex.exe', 'title': 'Apex Legends'},
-        {'app': 'VALORANT-Win64-Shipping.exe', 'title': 'Valorant'},
-        {'app': 'EXCEL.EXE', 'title': 'Microsoft Excel'},
-        {'app': 'DevilMayCry5.exe', 'title': 'Devil May Cry 5'},
-        {'app': 'Risk of Rain Returns.exe', 'title': 'Risk of Rain Returns'},
-        {'app': 'dotnet.exe', 'title': '.NET Core'},
-        {'app': 'AniLibrix.exe', 'title': 'AniLibrix'},
-        {'app': 'sai2.exe', 'title': 'PaintTool SAI 2'},
-        {'app': 'acad.exe', 'title': 'AutoCAD'},
-        {'app': 'Zoom.exe', 'title': 'Zoom'},
-        {'app': 'OuterWilds.exe', 'title': 'Outer Wilds'},
-        {'app': 'ui32.exe', 'title': 'Wallpaper Engine'},
-        {'app': 'Heretics Fork.exe', 'title': "Heretic's Fork"},
-        {'app': 'zen.exe', 'title': 'Zen Browser'},
-        {'app': 'METAPHOR.exe', 'title': 'Metaphor Refantazio'},
-        {'app': 'X6Game-Win64-Shipping.exe', 'title': 'Infinity Nikki'},
-        {'app': 'factorio.exe', 'title': 'Factorio'},
-        {'app': 'P3R.exe', 'title': 'P3Reload'},
-        {'app': 'NineSols.exe', 'title': 'Nine Sols'},
-        {'app': 'GF2_Exilium.exe', 'title': 'GF2 Exilium'},
-        {'app': 'SndVol.exe', 'title': 'Sound Volume Control'},
-        {'app': 'ItTakesTwo.exe', 'title': 'It Takes Two'},
-        {'app': 'VirtualBoxVM.exe', 'title': 'VirtualBox VM'},
-        {'app': 'thunderbird.exe', 'title': 'Mozilla Thunderbird'},
-        {'app': 'ApplicationFrameHost.exe', 'title': 'Application Frame Host'},
-        {'app': 'xtop.exe', 'title': 'PTC Creo'}
-    ]
-
     try:
-        with open(title_map_path, "w") as json_file:
-            json.dump(app_title_map, json_file, indent=4)
-        logging.info(f"App title mapping saved to {title_map_path}", )
+        with open(flatten_apps_to_title_map, "w") as json_file:
+            json.dump(flat_map, json_file, indent=4)
+        logging.info(f"Apps to title mapping saved to {flatten_apps_to_title_map}", )
     except IOError as e:
-        logging.error(f"Failed to save app title mapping to {title_map_path}: {e}")
+        logging.error(f"Failed to save Apps to title mapping to {flatten_apps_to_title_map}: {e}")
+
+def build_flatten_title_to_apps_map() -> dict:
+    """Flatten map to title -> app list"""
+    if os.path.exists(flatten_title_to_apps_map):
+        logging.info(f"Title to apps mapping already exists at \"{flatten_title_to_apps_map}\".")
+        return
+    
+    title_to_apps = {}
+    for os_dict in _get_app_map().values():
+        for category_dict in os_dict.values():
+            for app, title in category_dict.items():
+                if title is None:
+                    continue
+                title_to_apps.setdefault(title, []).append(app)
+    
+    try:
+        with open(flatten_title_to_apps_map, "w") as json_file:
+            json.dump(title_to_apps, json_file, indent=4)
+        logging.info(f"Title to apps mapping saved to {flatten_title_to_apps_map}", )
+    except IOError as e:
+        logging.error(f"Failed to save Title to apps mapping to {flatten_title_to_apps_map}: {e}")
 
 
 
@@ -271,15 +358,26 @@ def get_events():
 #endregion
 
 
-def get_app_list() -> list[dict[str, str]]:
-    """Loads the app title mapping from the JSON file."""
+def get_flatten_apps_to_title_map() -> list[dict[str, str]]:
+    """Loads the app title mapping from the JSON file."""    
     try:
-        with open(title_map_path, "r") as json_file:
+        with open(flatten_apps_to_title_map, "r") as json_file:
             app_title_map = json.load(json_file)
-        logging.info(f"Successfully loaded App title map from {title_map_path}")
+        logging.info(f"Successfully loaded Apps to title mapping from {flatten_apps_to_title_map}")
         return app_title_map
     except IOError as e:
-        logging.error(f"Failed to load app title map: {e}")
+        logging.error(f"Failed to load Apps to title mapping: {e}")
+        return []
+
+def get_flatten_title_to_apps_map() -> list[dict[str, str]]:
+    """Loads the app title mapping from the JSON file."""    
+    try:
+        with open(flatten_title_to_apps_map, "r") as json_file:
+            app_title_map_flatten = json.load(json_file)
+        logging.info(f"Successfully loaded Title to apps mapping from {flatten_title_to_apps_map}")
+        return app_title_map_flatten
+    except IOError as e:
+        logging.error(f"Failed to load Title to apps mapping: {e}")
         return []
 
 def get_spent_time() -> pd.DataFrame:
@@ -288,10 +386,10 @@ def get_spent_time() -> pd.DataFrame:
     result = spent_time()
     return result
 
-def get_daily_app_usage(app_name: str = "zen.exe") -> pd.DataFrame:
+def get_daily_app_usage(app_title: str = "Zen Browser") -> pd.DataFrame:
     """Calculates the time spent on each application each day"""
-    logging.info(f"Calculating daily app usage for {app_name}.")
-    result = daily_app_usage(app_name)
+    logging.info(f"Calculating daily app usage for {app_title}.")
+    result = daily_app_usage(app_title)
     return result
 
 def get_dataset_metadata() -> dict[str, str | int]:
@@ -328,13 +426,21 @@ def get_dataset_metadata() -> dict[str, str | int]:
 
 
 
-def daily_app_usage(app_name: str = 'chrome.exe', start_date: str = None, end_date: str = None) -> pd.DataFrame:
+
+# Example usage
+
+
+def daily_app_usage(app_title: str = 'Zen Browser', start_date: str = None, end_date: str = None) -> pd.DataFrame:
     """
     Calculates the daily time spent on a specified application using a direct SQL query.
     """
-    where_clauses = ["app = ?"]
-    params = [app_name]
-
+    title_map = get_flatten_title_to_apps_map()
+    apps = title_map.get(app_title, [app_title])  # fallback to app_title if unknown
+    placeholders = ','.join(['?'] * len(apps)) # question marks for query string    
+    
+    where_clauses = [f"app IN ({placeholders})"]
+    params = apps
+    
     if start_date:
         where_clauses.append("timestamp >= ?")
         params.append(start_date)
@@ -373,7 +479,7 @@ def daily_app_usage(app_name: str = 'chrome.exe', start_date: str = None, end_da
         # Reindex the DataFrame to fill in missing dates
         df_daily_usage = df_daily_usage.set_index('date').reindex(full_date_range).fillna(0).reset_index()
         df_daily_usage = df_daily_usage.rename(columns={'index': 'date'})
-
+    print(df_daily_usage.describe())
     return df_daily_usage
 
 def spent_time(start_date: str = None, end_date: str = None, min_duration: float = 10.0) -> pd.DataFrame:
@@ -406,11 +512,13 @@ def spent_time(start_date: str = None, end_date: str = None, min_duration: float
     df_events['duration'] = df_events['duration'] / 3600.0  # seconds to hours
     df_events['duration'] = df_events['duration'].round(2)  # round to 2 decimal places
 
-    with open(title_map_path, 'r') as json_file:
-        app_title_list = json.load(json_file)
-    app_title_map = {item['app']: item['title'] for item in app_title_list}
+    app_title_map = get_flatten_apps_to_title_map()
 
-    df_events['title'] = df_events['app'].map(app_title_map)
+    df_events['title'] = df_events['app'].map(app_title_map).fillna("Unknown")
+    
+    # group by title and sum durations
+    df_events = df_events.groupby('title', as_index=False).agg({'duration': 'sum', 'app': 'first'})
+    df_events = df_events.sort_values(by='duration', ascending=False).reset_index(drop=True)
 
     return df_events
 
@@ -418,4 +526,6 @@ def spent_time(start_date: str = None, end_date: str = None, min_duration: float
 
 
 if __name__ == "__main__":
+    build_flatten_title_to_apps_map()
+    build_flatten_apps_to_title_map()
     ...
