@@ -1,0 +1,274 @@
+{
+    "Google Chrome": [
+        "chrome.exe",
+        "chrome"
+    ],
+    "Microsoft Edge": [
+        "msedge.exe"
+    ],
+    "Zen Browser": [
+        "zen.exe",
+        "zen"
+    ],
+    "Discord": [
+        "Discord.exe",
+        "discord"
+    ],
+    "Telegram": [
+        "Telegram.exe",
+        "org.telegram.desktop"
+    ],
+    "Mozilla Thunderbird": [
+        "thunderbird.exe"
+    ],
+    "Zoom": [
+        "Zoom.exe"
+    ],
+    "Honkai: Star Rail": [
+        "StarRail.exe"
+    ],
+    "Genshin Impact": [
+        "GenshinImpact.exe"
+    ],
+    "Reverse 1999": [
+        "reverse1999.exe"
+    ],
+    "League of Legends": [
+        "League of Legends.exe"
+    ],
+    "League Client": [
+        "LeagueClientUx.exe"
+    ],
+    "Fortnite": [
+        "FortniteClient-Win64-Shipping.exe"
+    ],
+    "Wuthering Waves": [
+        "Client-Win64-Shipping.exe"
+    ],
+    "Goddess of Victory: Nikke": [
+        "nikke.exe"
+    ],
+    "Zenless Zone Zero": [
+        "ZenlessZoneZero.exe"
+    ],
+    "Overwatch": [
+        "Overwatch.exe",
+        "steam_app_2357570"
+    ],
+    "Risk of Rain 2": [
+        "Risk of Rain 2.exe"
+    ],
+    "Gunfire Reborn": [
+        "Gunfire Reborn.exe"
+    ],
+    "Hades 2": [
+        "Hades2.exe"
+    ],
+    "Valorant": [
+        "VALORANT-Win64-Shipping.exe"
+    ],
+    "Devil May Cry 5": [
+        "DevilMayCry5.exe"
+    ],
+    "Risk of Rain Returns": [
+        "Risk of Rain Returns.exe"
+    ],
+    "It Takes Two": [
+        "ItTakesTwo.exe"
+    ],
+    "Baldur's Gate 3": [
+        "bg3_dx11.exe"
+    ],
+    "Infinity Nikki": [
+        "X6Game-Win64-Shipping.exe"
+    ],
+    "P3Reload": [
+        "P3R.exe"
+    ],
+    "Nine Sols": [
+        "NineSols.exe"
+    ],
+    "GF2 Exilium": [
+        "GF2_Exilium.exe"
+    ],
+    "Metaphor Refantazio": [
+        "METAPHOR.exe"
+    ],
+    "Heretic's Fork": [
+        "Heretics Fork.exe"
+    ],
+    "BrownDust II": [
+        "BrownDust II.exe"
+    ],
+    "Apex Legends": [
+        "r5apex_dx12.exe"
+    ],
+    "Sea of Thieves": [
+        "SoTGame.exe"
+    ],
+    "Balatro": [
+        "Balatro.exe"
+    ],
+    "A Way Out": [
+        "AWayOut.exe"
+    ],
+    "TETR.IO": [
+        "TETR.IO.exe"
+    ],
+    "Terraria": [
+        "Terraria.exe"
+    ],
+    "Rungore": [
+        "Rungore.exe"
+    ],
+    "Outer Wilds": [
+        "OuterWilds.exe"
+    ],
+    "LDPlayer": [
+        "dnplayer.exe"
+    ],
+    "Factorio": [
+        "factorio.exe",
+        "factorio"
+    ],
+    "Split Fiction": [
+        "SplitFiction.exe"
+    ],
+    "Replicube": [
+        "Replicube.exe"
+    ],
+    "MiSide": [
+        "MiSideFull.exe"
+    ],
+    "FragPunk": [
+        "FragPunk.exe"
+    ],
+    "20 Small Mazes": [
+        "20SM.exe"
+    ],
+    "HoyoPlay Launcher": [
+        "HYP.exe"
+    ],
+    "Wuthering Waves Launcher": [
+        "launcher_main.exe"
+    ],
+    "Visual Studio Code": [
+        "Code.exe",
+        "code",
+        "code-oss"
+    ],
+    "Visual Studio": [
+        "devenv.exe"
+    ],
+    "AutoCAD": [
+        "acad.exe"
+    ],
+    "PaintTool SAI 2": [
+        "sai2.exe"
+    ],
+    "Obsidian": [
+        "Obsidian.exe",
+        "obsidian"
+    ],
+    "Microsoft Word": [
+        "WINWORD.EXE"
+    ],
+    "Microsoft Excel": [
+        "EXCEL.EXE"
+    ],
+    "Microsoft PowerPoint": [
+        "POWERPNT.EXE"
+    ],
+    "NetBeans IDE": [
+        "netbeans64.exe"
+    ],
+    "MATLAB": [
+        "MATLAB.exe"
+    ],
+    "Godot Engine": [
+        "godot.windows.opt.tools.64.exe"
+    ],
+    "pgAdmin 4": [
+        "pgAdmin4.exe"
+    ],
+    "PTC Creo": [
+        "xtop.exe"
+    ],
+    "File Explorer": [
+        "explorer.exe"
+    ],
+    "Windows Shell Experience": [
+        "ShellExperienceHost.exe"
+    ],
+    "Application Frame Host": [
+        "ApplicationFrameHost.exe"
+    ],
+    "Sound Volume Control": [
+        "SndVol.exe"
+    ],
+    "VirtualBox VM": [
+        "VirtualBoxVM.exe"
+    ],
+    "Task Manager": [
+        "Taskmgr.exe"
+    ],
+    ".NET Core": [
+        "dotnet.exe"
+    ],
+    "NVIDIA App": [
+        "NVIDIA app.exe"
+    ],
+    "MinTTY Terminal": [
+        "mintty.exe"
+    ],
+    "Python": [
+        "python.exe"
+    ],
+    "Snipping Tool": [
+        "SnippingTool.exe"
+    ],
+    "Spotify": [
+        "Spotify.exe",
+        "Spotify"
+    ],
+    "AniLibrix": [
+        "AniLibrix.exe"
+    ],
+    "VLC Media Player": [
+        "vlc.exe",
+        "vlc"
+    ],
+    "Wallpaper Engine": [
+        "ui32.exe"
+    ],
+    "Microsoft Photos": [
+        "Photos.exe"
+    ],
+    "OBS Studio": [
+        "obs64.exe"
+    ],
+    "Flow Launcher": [
+        "Flow.Launcher.exe"
+    ],
+    "Steam Web Helper": [
+        "steamwebhelper.exe"
+    ],
+    "Mozilla Firefox": [
+        "firefox"
+    ],
+    "Steam": [
+        "steam"
+    ],
+    "Blue Archvie": [
+        "steam_app_3557620"
+    ],
+    "Alacritty Terminal": [
+        "Alacritty"
+    ],
+    "Files (Nautilus)": [
+        "org.gnome.Nautilus"
+    ],
+    "mpv Media Player": [
+        "mpv"
+    ]
+}
