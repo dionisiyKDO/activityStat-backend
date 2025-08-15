@@ -1,8 +1,11 @@
+# app/main.py
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from utils import get_app_list, get_spent_time, get_daily_app_usage, get_dataset_metadata, create_app_title_mapping, init_db
+from utils import (
+    get_spent_time, get_daily_app_usage, get_dataset_metadata, get_flatten_apps_to_title_map,
+    build_flatten_title_to_apps_map, build_flatten_apps_to_title_map, init_db
+)
 
 app = FastAPI()
 
@@ -21,23 +24,26 @@ def read_root():
 
 @app.get("/app_list")
 def app_list():
-    return JSONResponse(content=get_app_list())
+    return get_flatten_apps_to_title_map()
 
 @app.get("/spent_time")
 def spent_time():
-    return JSONResponse(content=get_spent_time())
+    result = get_spent_time().to_dict(orient="records")
+    print(result)
+    return result
 
 @app.get("/daily_app_usage/{app_name}")
 def daily_app_usage(app_name: str):
-    return get_daily_app_usage(app_name)
+    return get_daily_app_usage(app_name).to_dict(orient="records")
 
 @app.get("/dataset_metadata")
 def dataset_metadata():
-    """API endpoint to fetch metadata about the dataset."""
     return get_dataset_metadata()
 
 
 if __name__ == "__main__":
+    build_flatten_title_to_apps_map()
+    build_flatten_apps_to_title_map()
     init_db()
-    create_app_title_mapping()
+    
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
