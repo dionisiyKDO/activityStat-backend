@@ -509,8 +509,6 @@ def spent_time(start_date: str = None, end_date: str = None, min_duration: float
     with sqlite3.connect(database_path) as conn:
         df_events = pd.read_sql_query(query, conn, params=params)
 
-    df_events['duration'] = df_events['duration'] / 3600.0  # seconds to hours
-    df_events['duration'] = df_events['duration'].round(2)  # round to 2 decimal places
 
     app_title_map = get_flatten_apps_to_title_map()
 
@@ -519,6 +517,9 @@ def spent_time(start_date: str = None, end_date: str = None, min_duration: float
     # group by title and sum durations
     df_events = df_events.groupby('title', as_index=False).agg({'duration': 'sum', 'app': 'first'})
     df_events = df_events.sort_values(by='duration', ascending=False).reset_index(drop=True)
+    
+    df_events['duration'] = df_events['duration'] / 3600.0  # seconds to hours
+    df_events['duration'] = df_events['duration'].round(2)  # round to 2 decimal places
 
     return df_events
 
