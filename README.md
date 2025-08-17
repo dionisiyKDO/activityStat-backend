@@ -38,7 +38,18 @@ source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-4. Run the server:
+4. Copy exported ActivityWatch data to the `data/export` directory.
+
+- To get your data, while AW is running, go to `http://localhost:5600/#/buckets` and press "Export all buckets as JSON."
+- The exported file will be named `aw-buckets-export.json`.
+- You can use multiple export files, but they must all start with `aw-buckets-export` to be detected.
+
+```bash
+mkdir data/export
+cp /path/to/activitywatch/export/*.json data/export
+```
+
+5. Run the server:
 
 ```bash
 cd ./app
