@@ -1,6 +1,7 @@
 # app/main.py
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Query, Body
+from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from utils import (
     get_spent_time,
@@ -41,9 +42,9 @@ def spent_time():
     return get_spent_time().to_dict(orient="records")
 
 
-@app.get("/daily_app_usage/{app_name}")
-def daily_app_usage(app_name: str):
-    return get_daily_app_usage(app_name).to_dict(orient="records")
+@app.post("/daily_app_usage")
+def daily_app_usage_endpoint(app_titles: list[str] = Body(..., embed=True)):
+    return get_daily_app_usage(app_titles).to_dict(orient="records")
 
 
 @app.get("/dataset_metadata")
