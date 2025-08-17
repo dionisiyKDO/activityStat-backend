@@ -26,11 +26,10 @@ def read_root():
 def app_list():
     return get_flatten_title_to_apps_map()
 
+# TODO: Spent tim get's app executable, only one, windows's
 @app.get("/spent_time")
 def spent_time():
-    result = get_spent_time().to_dict(orient="records")
-    print(result)
-    return result
+    return get_spent_time().to_dict(orient="records")
 
 @app.get("/daily_app_usage/{app_name}")
 def daily_app_usage(app_name: str):
