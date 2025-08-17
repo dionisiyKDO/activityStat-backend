@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from utils import (
     get_spent_time,
     get_daily_app_usage,
+    get_daily_os_usage,
     get_dataset_metadata,
     get_flatten_apps_to_title_map,
     get_flatten_title_to_apps_map,
@@ -27,18 +28,18 @@ app.add_middleware(
 
 
 @app.get("/")
-def read_root():
+def read_root_endpoint():
     return {"Hello": "World"}
 
 
 @app.get("/app_list")
-def app_list():
+def app_list_endpoint():
     return get_flatten_title_to_apps_map()
 
 
 # TODO: Spent tim get's app executable, only one, windows's
 @app.get("/spent_time")
-def spent_time():
+def spent_time_endpoint():
     return get_spent_time().to_dict(orient="records")
 
 
@@ -47,8 +48,13 @@ def daily_app_usage_endpoint(app_titles: list[str] = Body(..., embed=True)):
     return get_daily_app_usage(app_titles).to_dict(orient="records")
 
 
+@app.get("/daily_os_usage")
+def daily_os_usage_endpoint():
+    return get_daily_os_usage().to_dict(orient="records")
+
+
 @app.get("/dataset_metadata")
-def dataset_metadata():
+def dataset_metadata_endpoint():
     return get_dataset_metadata()
 
 

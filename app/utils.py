@@ -395,6 +395,12 @@ def get_daily_app_usage(app_titles: list[str] = ["Zen Browser", "Google Chrome"]
     result = daily_app_usage(app_titles)
     return result
 
+def get_daily_os_usage() -> pd.DataFrame:
+    """Calculates the time spent on each OS each day"""
+    logging.info("Calculating daily OS usage.")
+    result = daily_os_usage()
+    return result
+
 def get_dataset_metadata() -> dict[str, str | int]:
     """Fetch metadata about the dataset, such as the date range."""
     logging.info("Fetching dataset metadata")
@@ -435,7 +441,7 @@ def get_dataset_metadata() -> dict[str, str | int]:
 
 def daily_app_usage(app_titles: str = ['Zen Browser', 'Google Chrome'], start_date: str = None, end_date: str = None) -> pd.DataFrame:
     """
-    Calculates the daily time spent on a specified application using a direct SQL query.
+    Calculates the daily time spent on a specified application.
     """
     title_map = get_flatten_title_to_apps_map()
     apps_map = get_flatten_apps_to_title_map()
@@ -493,6 +499,56 @@ def daily_app_usage(app_titles: str = ['Zen Browser', 'Google Chrome'], start_da
     for app, group in df.groupby('app'):
         g = group.set_index('date').reindex(full_range).fillna(0).reset_index()
         g['app'] = app
+        g = g.rename(columns={'index': 'date'})
+        df_filled.append(g)
+
+    df_result = pd.concat(df_filled, ignore_index=True)
+    return df_result
+
+def daily_os_usage(start_date: str = None, end_date: str = None) -> pd.DataFrame:
+    """
+    Calculates the daily time spent on different OS.
+    """
+    params = []
+    where_clauses = []
+    if start_date:
+        where_clauses.append("timestamp >= ?")
+        params.append(start_date)
+    if end_date:
+        where_clauses.append("timestamp <= ?")
+        params.append(end_date)
+    where_sql = f"WHERE {' AND '.join(where_clauses)}"
+
+    query = f"""
+        SELECT
+            strftime('%Y-%m-%d', timestamp) AS date,
+            platform,
+            SUM(duration) AS duration
+        FROM events
+        { where_sql if where_clauses  else '' }
+        GROUP BY date, platform
+        ORDER BY date ASC
+    """
+
+    with sqlite3.connect(database_path) as conn:
+        df = pd.read_sql_query(query, conn, params=params)
+
+    if df.empty:
+        return df
+    
+    # Convert duration to hours + round
+    df['duration'] = (df['duration'] / 3600.0).round(2)
+    df['date'] = pd.to_datetime(df['date'])
+    
+    # Fill in missing dates using Pandas
+    min_date = df['date'].min()
+    max_date = df['date'].max()
+    full_range = pd.date_range(start=min_date, end=max_date, freq='D')
+    
+    df_filled = []
+    for app, group in df.groupby('platform'):
+        g = group.set_index('date').reindex(full_range).fillna(0).reset_index()
+        g['platform'] = app
         g = g.rename(columns={'index': 'date'})
         df_filled.append(g)
 
