@@ -47,6 +47,7 @@ logging.basicConfig(
 
 #endregion
 
+#region Title map helpers
 
 def _get_app_map() -> dict:
     """Generates and saves a mapping of app executable names to user-friendly titles."""
@@ -223,6 +224,7 @@ def build_flatten_title_to_apps_map() -> dict:
     except IOError as e:
         logging.error(f"Failed to save Title to apps mapping to {flatten_title_to_apps_map}: {e}")
 
+#endregion
 
 
 def _get_df(path: str = data_path) -> pd.DataFrame:
@@ -357,6 +359,7 @@ def get_events():
 
 #endregion
 
+#region Get functions
 
 def get_flatten_apps_to_title_map() -> list[dict[str, str]]:
     """Loads the app title mapping from the JSON file."""    
@@ -423,12 +426,12 @@ def get_dataset_metadata() -> dict[str, str | int]:
     
     return metadata
 
+#endregion
 
+#region Helper functions
 
-
-
-# Example usage
-
+#TODO: I thinking about the need in this functions
+# Why not merge them with `get_spent_time()` and `get_daily_app_usage()`?
 
 def daily_app_usage(app_title: str = 'Zen Browser', start_date: str = None, end_date: str = None) -> pd.DataFrame:
     """
@@ -523,7 +526,7 @@ def spent_time(start_date: str = None, end_date: str = None, min_duration: float
 
     return df_events
 
-
+#endregion
 
 
 if __name__ == "__main__":
