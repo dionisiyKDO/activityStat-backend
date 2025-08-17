@@ -67,6 +67,7 @@ def _get_app_map() -> dict:
             "Games": {
                 "StarRail.exe": "Honkai: Star Rail",
                 "GenshinImpact.exe": "Genshin Impact",
+                "BlueArchive.exe": "Blue Archive",
                 "reverse1999.exe": "Reverse 1999",
                 "League of Legends.exe": "League of Legends",
                 "LeagueClientUx.exe": "League Client",
@@ -133,7 +134,6 @@ def _get_app_map() -> dict:
                 "dotnet.exe": ".NET Core",
                 "NVIDIA app.exe": "NVIDIA App",
                 "mintty.exe": "MinTTY Terminal",
-                "Taskmgr.exe": "Task Manager",
                 "python.exe": "Python",
                 "SnippingTool.exe": "Snipping Tool"
             },
@@ -162,7 +162,7 @@ def _get_app_map() -> dict:
             },
             "Games": {
                 "steam": "Steam",
-                "steam_app_3557620": "Blue Archvie",
+                "steam_app_3557620": "Blue Archive",
                 "steam_app_2357570": "Overwatch",
                 "factorio": "Factorio",
             },
@@ -389,10 +389,10 @@ def get_spent_time() -> pd.DataFrame:
     result = spent_time()
     return result
 
-def get_daily_app_usage(app_title: str = "Zen Browser") -> pd.DataFrame:
+def get_daily_app_usage(app_titles: list[str] = ["Zen Browser", "Google Chrome"]) -> pd.DataFrame:
     """Calculates the time spent on each application each day"""
-    logging.info(f"Calculating daily app usage for {app_title}.")
-    result = daily_app_usage(app_title)
+    logging.info(f"Calculating daily app usage for {app_titles}.")
+    result = daily_app_usage(app_titles)
     return result
 
 def get_dataset_metadata() -> dict[str, str | int]:
@@ -433,56 +433,71 @@ def get_dataset_metadata() -> dict[str, str | int]:
 #TODO: I thinking about the need in this functions
 # Why not merge them with `get_spent_time()` and `get_daily_app_usage()`?
 
-def daily_app_usage(app_title: str = 'Zen Browser', start_date: str = None, end_date: str = None) -> pd.DataFrame:
+def daily_app_usage(app_titles: str = ['Zen Browser', 'Google Chrome'], start_date: str = None, end_date: str = None) -> pd.DataFrame:
     """
     Calculates the daily time spent on a specified application using a direct SQL query.
     """
     title_map = get_flatten_title_to_apps_map()
-    apps = title_map.get(app_title, [app_title])  # fallback to app_title if unknown
-    placeholders = ','.join(['?'] * len(apps)) # question marks for query string    
+    apps_map = get_flatten_apps_to_title_map()
+    
+    all_execs = []
+    for app_title in app_titles:
+        all_execs += title_map.get(app_title, [app_title])
+    
+    placeholders = ','.join(['?'] * len(all_execs)) # question marks for query string 
+    params = all_execs
     
     where_clauses = [f"app IN ({placeholders})"]
-    params = apps
-    
     if start_date:
         where_clauses.append("timestamp >= ?")
         params.append(start_date)
     if end_date:
         where_clauses.append("timestamp <= ?")
         params.append(end_date)
-
     where_sql = f"WHERE {' AND '.join(where_clauses)}"
 
     query = f"""
         SELECT
             strftime('%Y-%m-%d', timestamp) AS date,
+            app,
             SUM(duration) AS duration
         FROM events
         {where_sql}
-        GROUP BY date
+        GROUP BY date, app
         ORDER BY date ASC
     """
 
     with sqlite3.connect(database_path) as conn:
-        df_daily_usage = pd.read_sql_query(query, conn, params=params)
+        df = pd.read_sql_query(query, conn, params=params)
 
-    # Convert duration from seconds to hours
-    df_daily_usage['duration'] = df_daily_usage['duration'] / 3600.0  # seconds to hours
-    df_daily_usage['duration'] = df_daily_usage['duration'].round(2)  # round to 2 decimal places
+    if df.empty:
+        return df
+    
+    # Map executables back to titles
+    df['app'] = df['app'].map(apps_map)
+    
+    # Aggregate by title+date (sum diff executables)
+    df = df.groupby(['date', 'app'], as_index=False)['duration'].sum()
 
+    # Convert duration to hours + round
+    df['duration'] = (df['duration'] / 3600.0).round(2)
+    df['date'] = pd.to_datetime(df['date'])
+    
     # Fill in missing dates using Pandas
-    if not df_daily_usage.empty:
-        df_daily_usage['date'] = pd.to_datetime(df_daily_usage['date'])
-        
-        # Create a complete date range
-        min_date = df_daily_usage['date'].min()
-        max_date = df_daily_usage['date'].max()
-        full_date_range = pd.date_range(start=min_date, end=max_date, freq='D')
-        
-        # Reindex the DataFrame to fill in missing dates
-        df_daily_usage = df_daily_usage.set_index('date').reindex(full_date_range).fillna(0).reset_index()
-        df_daily_usage = df_daily_usage.rename(columns={'index': 'date'})
-    return df_daily_usage
+    min_date = df['date'].min()
+    max_date = df['date'].max()
+    full_range = pd.date_range(start=min_date, end=max_date, freq='D')
+    
+    # Reindex separately per app, then concat back
+    df_filled = []
+    for app, group in df.groupby('app'):
+        g = group.set_index('date').reindex(full_range).fillna(0).reset_index()
+        g['app'] = app
+        g = g.rename(columns={'index': 'date'})
+        df_filled.append(g)
+
+    df_result = pd.concat(df_filled, ignore_index=True)
+    return df_result
 
 def spent_time(start_date: str = None, end_date: str = None, min_duration: float = 10.0) -> pd.DataFrame:
     """Calculates the total time spent on each application"""
@@ -520,8 +535,7 @@ def spent_time(start_date: str = None, end_date: str = None, min_duration: float
     df_events = df_events.groupby('title', as_index=False).agg({'duration': 'sum', 'app': 'first'})
     df_events = df_events.sort_values(by='duration', ascending=False).reset_index(drop=True)
     
-    df_events['duration'] = df_events['duration'] / 3600.0  # seconds to hours
-    df_events['duration'] = df_events['duration'].round(2)  # round to 2 decimal places
+    df_events['duration'] = (df_events['duration'] / 3600.0).round(2) # seconds to hours, round to 2 decimal places
 
     return df_events
 
@@ -531,4 +545,5 @@ def spent_time(start_date: str = None, end_date: str = None, min_duration: float
 if __name__ == "__main__":
     build_flatten_title_to_apps_map()
     build_flatten_apps_to_title_map()
+    init_db()
     ...
