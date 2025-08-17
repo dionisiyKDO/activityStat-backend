@@ -45,12 +45,13 @@ cd ./app
 uvicorn main:app --reload
 ```
 
-## API Endpoints:
-
+## API Endpoints
 
 ### `GET /app_list`
+
 List of application titles with associated executables/classes.  
 **Example:**
+
 ```json
 {
   "Google Chrome": ["chrome.exe", "chrome"],
@@ -94,7 +95,6 @@ Metadata about the imported dataset.
   "total_records": 100000
 }
 ```
-
 
 ## Requirements
 
