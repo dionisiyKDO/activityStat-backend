@@ -482,7 +482,6 @@ def daily_app_usage(app_title: str = 'Zen Browser', start_date: str = None, end_
         # Reindex the DataFrame to fill in missing dates
         df_daily_usage = df_daily_usage.set_index('date').reindex(full_date_range).fillna(0).reset_index()
         df_daily_usage = df_daily_usage.rename(columns={'index': 'date'})
-    print(df_daily_usage.describe())
     return df_daily_usage
 
 def spent_time(start_date: str = None, end_date: str = None, min_duration: float = 10.0) -> pd.DataFrame:
